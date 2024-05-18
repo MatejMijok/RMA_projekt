@@ -5,12 +5,19 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -62,13 +69,13 @@ fun RegisterPage(modifier: Modifier = Modifier) {
     Column (
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .imePadding(),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ){
         Text(
-            text = "Log in",
+            text = "Register",
             fontSize = 40.sp,
             modifier = modifier.padding(bottom = 14.dp)
         )
@@ -77,28 +84,40 @@ fun RegisterPage(modifier: Modifier = Modifier) {
             onValueChange = { username = it },
             placeholder = {Text(text = "Username")},
             shape = RoundedCornerShape(15.dp),
-            modifier = modifier.padding(bottom = 14.dp)
+            modifier = modifier
+                .padding(bottom = 14.dp)
+                .widthIn(max = 280.dp),
+            singleLine = true
         )
         OutlinedTextField(
             value = firstName,
             onValueChange = { firstName = it },
             placeholder = {Text(text = "First name")},
             shape = RoundedCornerShape(15.dp),
-            modifier = modifier.padding(bottom = 14.dp)
+            modifier = modifier
+                .padding(bottom = 14.dp)
+                .widthIn(max = 280.dp),
+            singleLine = true
         )
         OutlinedTextField(
             value = lastName,
             onValueChange = { lastName = it },
             placeholder = {Text(text = "Last name")},
             shape = RoundedCornerShape(15.dp),
-            modifier = modifier.padding(bottom = 14.dp)
+            modifier = modifier
+                .padding(bottom = 14.dp)
+                .widthIn(max = 280.dp),
+            singleLine = true
         )
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
             placeholder = {Text(text = "E-mail")},
             shape = RoundedCornerShape(15.dp),
-            modifier = modifier.padding(bottom = 14.dp)
+            modifier = modifier
+                .padding(bottom = 14.dp)
+                .widthIn(max = 280.dp),
+            singleLine = true
         )
         OutlinedTextField(
             value = password,
@@ -106,7 +125,10 @@ fun RegisterPage(modifier: Modifier = Modifier) {
             placeholder = {Text(text = "Password")},
             visualTransformation = PasswordVisualTransformation(),
             shape = RoundedCornerShape(15.dp),
-            modifier = modifier.padding(bottom = 14.dp)
+            modifier = modifier
+                .padding(bottom = 14.dp)
+                .widthIn(max = 280.dp),
+            singleLine = true
         )
         OutlinedTextField(
             value = repeatPassword,
@@ -114,7 +136,10 @@ fun RegisterPage(modifier: Modifier = Modifier) {
             placeholder = {Text(text = "Repeat password")},
             visualTransformation = PasswordVisualTransformation(),
             shape = RoundedCornerShape(15.dp),
-            modifier = modifier.padding(bottom = 14.dp)
+            modifier = modifier
+                .padding(bottom = 14.dp)
+                .widthIn(max = 280.dp),
+            singleLine = true
         )
         Button(
             onClick = { /* TODO */ },
@@ -131,6 +156,12 @@ fun RegisterPage(modifier: Modifier = Modifier) {
                 fontSize = 18.sp
             )
         }
+        Spacer(modifier = Modifier.height(14.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.ime)
+        )
     }
 }
 

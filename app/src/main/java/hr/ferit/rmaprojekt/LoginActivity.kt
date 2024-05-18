@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -59,6 +60,7 @@ fun LoginPage(modifier: Modifier = Modifier) {
     Column (
         modifier = Modifier
             .fillMaxSize()
+            .widthIn(max = 400.dp)
             .verticalScroll(rememberScrollState())
             .imePadding(),
         verticalArrangement = Arrangement.Center,
@@ -74,8 +76,10 @@ fun LoginPage(modifier: Modifier = Modifier) {
             onValueChange = { username = it },
             placeholder = {Text(text = "Username")},
             shape = RoundedCornerShape(15.dp),
-            modifier = modifier.padding(bottom = 14.dp)
-
+            modifier = modifier
+                .padding(bottom = 14.dp)
+                .widthIn(max = 280.dp),
+            singleLine = true,
         )
         OutlinedTextField(
             value = password,
@@ -83,7 +87,10 @@ fun LoginPage(modifier: Modifier = Modifier) {
             placeholder = {Text(text = "Password")},
             visualTransformation = PasswordVisualTransformation(),
             shape = RoundedCornerShape(15.dp),
-            modifier = modifier.padding(bottom = 14.dp)
+            modifier = modifier
+                .padding(bottom = 14.dp)
+                .widthIn(max = 280.dp),
+            singleLine = true
         )
         Button(
             onClick = { /* TODO */ },
