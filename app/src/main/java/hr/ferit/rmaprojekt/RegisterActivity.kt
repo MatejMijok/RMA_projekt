@@ -1,5 +1,6 @@
 package hr.ferit.rmaprojekt
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -27,6 +28,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +40,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.auth.FirebaseAuth
 import hr.ferit.rmaprojekt.ui.theme.RMAProjektTheme
 class RegisterActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,14 +59,28 @@ class RegisterActivity : ComponentActivity() {
         }
 }
 
+
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun RegisterPage(modifier: Modifier = Modifier) {
+    val auth = FirebaseAuth.getInstance()
+
     var username by remember { mutableStateOf(TextFieldValue("")) }
     var firstName by remember { mutableStateOf(TextFieldValue("")) }
     var lastName by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
     var repeatPassword by remember { mutableStateOf(TextFieldValue("")) }
     var email by remember { mutableStateOf(TextFieldValue("")) }
+
+    var passwordError by remember { mutableStateOf("") }
+    var repeatPasswordError by remember { mutableStateOf("") }
+    var isEmailValid by remember { mutableStateOf(true) }
+    var isUsernameValid by remember { mutableStateOf(true) }
+    var isPasswordValid by remember { mutableStateOf(true) }
+    var isRepeatPasswordValid by remember { mutableStateOf(true) }
+    val hasErrors by derivedStateOf {
+        !isUsernameValid || !isEmailValid || !isPasswordValid || !isRepeatPasswordValid
+    }
 
     Column (
         modifier = Modifier
@@ -76,7 +93,7 @@ fun RegisterPage(modifier: Modifier = Modifier) {
         Text(
             text = "Register",
             fontSize = 40.sp,
-            modifier = modifier.padding(bottom = 14.dp)
+            modifier = modifier.padding(bottom = 15.dp)
         )
         OutlinedTextField(
             value = username,
@@ -84,7 +101,7 @@ fun RegisterPage(modifier: Modifier = Modifier) {
             placeholder = {Text(text = "Username")},
             shape = RoundedCornerShape(15.dp),
             modifier = modifier
-                .padding(bottom = 14.dp)
+                .padding(bottom = 21.dp)
                 .widthIn(max = 280.dp),
             singleLine = true
         )
@@ -94,7 +111,7 @@ fun RegisterPage(modifier: Modifier = Modifier) {
             placeholder = {Text(text = "First name")},
             shape = RoundedCornerShape(15.dp),
             modifier = modifier
-                .padding(bottom = 14.dp)
+                .padding(bottom = 21.dp)
                 .widthIn(max = 280.dp),
             singleLine = true
         )
@@ -104,44 +121,89 @@ fun RegisterPage(modifier: Modifier = Modifier) {
             placeholder = {Text(text = "Last name")},
             shape = RoundedCornerShape(15.dp),
             modifier = modifier
-                .padding(bottom = 14.dp)
+                .padding(bottom = 20.dp)
                 .widthIn(max = 280.dp),
             singleLine = true
         )
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = {
+                email = it
+                isEmailValid = android.util.Patterns.EMAIL_ADDRESS.matcher(it.text).matches()
+                            },
             placeholder = {Text(text = "E-mail")},
             shape = RoundedCornerShape(15.dp),
             modifier = modifier
-                .padding(bottom = 14.dp)
-                .widthIn(max = 280.dp),
-            singleLine = true
+                .widthIn(max = 280.dp)
+                .padding(bottom = 4.dp),
+            singleLine = true,
+            isError = !isEmailValid,
+            supportingText = {if (!isEmailValid) {
+                Text(text = "Invalid email address")
+                }
+            }
         )
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
-            placeholder = {Text(text = "Password")},
-            visualTransformation = PasswordVisualTransformation(),
+            onValueChange = {
+                password = it
+                if (password.text != repeatPassword.text) {
+                    isPasswordValid = false
+                    passwordError = "Passwords do not match"
+                    repeatPasswordError = "Passwords do not match"
+                } else {
+                    isPasswordValid = true
+                    passwordError = ""
+                    repeatPasswordError = ""
+                }
+            },
+            placeholder = { Text(text = "Password") },
             shape = RoundedCornerShape(15.dp),
+            visualTransformation = PasswordVisualTransformation(),
             modifier = modifier
-                .padding(bottom = 14.dp)
                 .widthIn(max = 280.dp),
-            singleLine = true
+            singleLine = true,
+            isError = !isPasswordValid,
+            supportingText = {if (!isPasswordValid) {
+                Text(text = passwordError)
+            }else{
+                Text(text = "")
+            }
+            }
         )
         OutlinedTextField(
             value = repeatPassword,
-            onValueChange = { repeatPassword = it },
+            onValueChange = {
+                repeatPassword = it
+                if (password.text != repeatPassword.text) {
+                    isPasswordValid = false
+                    isRepeatPasswordValid = false
+                    passwordError = "Passwords do not match"
+                    repeatPasswordError = "Passwords do not match"
+                } else {
+                    isPasswordValid = true
+                    isRepeatPasswordValid = true
+                    passwordError = ""
+                    repeatPasswordError = ""
+                }},
             placeholder = {Text(text = "Repeat password")},
             visualTransformation = PasswordVisualTransformation(),
             shape = RoundedCornerShape(15.dp),
             modifier = modifier
-                .padding(bottom = 14.dp)
-                .widthIn(max = 280.dp),
-            singleLine = true
+                .widthIn(max = 280.dp)
+                .padding(bottom = 1.dp),
+            singleLine = true,
+            isError = !isRepeatPasswordValid,
+            supportingText = {if (!isRepeatPasswordValid) {
+                Text(text = repeatPasswordError)
+            }else{
+                Text(text = "")
+                }
+            }
         )
         Button(
             onClick = { /* TODO */ },
+            enabled = username.text.isNotEmpty() && email.text.isNotEmpty() && password.text.isNotEmpty() && repeatPassword.text.isNotEmpty() && !hasErrors,
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF4B5C92),
                 contentColor = Color(0xFFDDE1F9)
@@ -163,4 +225,3 @@ fun RegisterPage(modifier: Modifier = Modifier) {
         )
     }
 }
-
