@@ -1,5 +1,7 @@
 package hr.ferit.rmaprojekt
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -29,10 +31,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.auth.FirebaseAuth
 import hr.ferit.rmaprojekt.ui.theme.RMAProjektTheme
 
 class LoginActivity : ComponentActivity() {
@@ -54,8 +58,13 @@ class LoginActivity : ComponentActivity() {
 
 @Composable
 fun LoginPage(modifier: Modifier = Modifier) {
-    var username by remember { mutableStateOf(TextFieldValue("")) }
+    val context = LocalContext.current
+
+    var email by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
+    var isLoginValid by remember { mutableStateOf(true) }
+    var isEmailValid by remember { mutableStateOf(true) }
+    var emailError by remember { mutableStateOf("") }
 
     Column (
         modifier = Modifier
@@ -72,28 +81,58 @@ fun LoginPage(modifier: Modifier = Modifier) {
             modifier = modifier.padding(bottom = 14.dp)
         )
         OutlinedTextField(
-            value = username,
-            onValueChange = { username = it },
-            placeholder = {Text(text = "Username")},
+            value = email,
+            onValueChange = {
+                email = it
+                isEmailValid = android.util.Patterns.EMAIL_ADDRESS.matcher(it.text).matches()
+                emailError = "Invalid E-mail address"
+                            },
+            placeholder = {Text(text = "E-mail")},
             shape = RoundedCornerShape(15.dp),
             modifier = modifier
                 .padding(bottom = 14.dp)
                 .widthIn(max = 280.dp),
             singleLine = true,
+            isError = !isEmailValid,
+            supportingText = {if (!isEmailValid) Text(text = emailError)}
         )
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = {
+                password = it
+                isLoginValid = true
+                            },
             placeholder = {Text(text = "Password")},
             visualTransformation = PasswordVisualTransformation(),
             shape = RoundedCornerShape(15.dp),
             modifier = modifier
                 .padding(bottom = 14.dp)
                 .widthIn(max = 280.dp),
-            singleLine = true
+            singleLine = true,
+            isError = !isLoginValid,
+            supportingText = {if (!isLoginValid) Text(text = "E-mail or password is incorrect")}
         )
         Button(
-            onClick = { /* TODO */ },
+            onClick = {
+                val auth = FirebaseAuth.getInstance()
+                auth.signInWithEmailAndPassword(email.text, password.text)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            val intent = Intent(context, HomeActivity::class.java)
+                            context.startActivity(intent)
+                            (context as? Activity)?.finish()
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            // You can handle different failure cases here
+                        }
+                    }
+                    .addOnFailureListener{
+                        isLoginValid = false
+                        isEmailValid = false
+                        emailError = "E-mail or password is incorrect"
+                    }
+            },
+            enabled = email.text.isNotEmpty() && password.text.isNotEmpty(),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF4B5C92),
                 contentColor = Color(0xFFDDE1F9)
