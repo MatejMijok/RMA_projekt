@@ -14,6 +14,8 @@ class UserViewModel(private val repository: UserRepository): ViewModel() {
     val userData: StateFlow<User?> = _userData.asStateFlow()
     private val _registrationStatus = MutableStateFlow<UserRepository.RegistrationResult?>(null)
     val registrationStatus: StateFlow<UserRepository.RegistrationResult?> = _registrationStatus.asStateFlow()
+    private val _loginStatus = MutableStateFlow<UserRepository.LoginResult?>(null)
+    val loginStatus: StateFlow<UserRepository.LoginResult?> = _loginStatus.asStateFlow()
 
     init {
         viewModelScope.launch{
@@ -24,6 +26,12 @@ class UserViewModel(private val repository: UserRepository): ViewModel() {
     suspend fun registerUser(user: User, password: String){
         viewModelScope.launch {
             _registrationStatus.value = repository.registerUser(user, password)
+        }
+    }
+
+    suspend fun loginUser(email: String, password: String){
+        viewModelScope.launch {
+            _loginStatus.value = repository.loginUser(email, password)
         }
     }
 }

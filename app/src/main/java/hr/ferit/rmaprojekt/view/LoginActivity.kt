@@ -17,6 +17,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,8 +30,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.google.firebase.auth.FirebaseAuth
+import hr.ferit.rmaprojekt.data.repository.UserRepository
+import hr.ferit.rmaprojekt.viewmodel.UserViewModel
+import hr.ferit.rmaprojekt.viewmodel.UserViewModelFactory
+import kotlinx.coroutines.launch
 
 class LoginActivity : ComponentActivity() {
 }
@@ -42,6 +49,7 @@ fun LoginScreen(navController: NavHostController, modifier: Modifier = Modifier)
     var isLoginValid by remember { mutableStateOf(true) }
     var isEmailValid by remember { mutableStateOf(true) }
     var emailError by remember { mutableStateOf("") }
+    val viewModel: UserViewModel = viewModel(factory = UserViewModelFactory(UserRepository()))
 
     Column (
         modifier = Modifier
@@ -91,25 +99,11 @@ fun LoginScreen(navController: NavHostController, modifier: Modifier = Modifier)
         )
         Button(
             onClick = {
-                val auth = FirebaseAuth.getInstance()
-                auth.signInWithEmailAndPassword(email.text, password.text)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            navController.navigate("home") {
-                                popUpTo("welcome") { inclusive = true }
-                            }
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            // You can handle different failure cases here
-                        }
-                    }
-                    .addOnFailureListener{
-                        isLoginValid = false
-                        isEmailValid = false
-                        emailError = "E-mail or password is incorrect"
-                    }
+                viewModel.viewModelScope.launch {
+                    viewModel.loginUser(email.text, password.text)
+                }
             },
-            enabled = email.text.isNotEmpty() && password.text.isNotEmpty(),
+            enabled = email.text.isNotEmpty() && password.text.isNotEmpty() && isEmailValid,
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF4B5C92),
                 contentColor = Color(0xFFDDE1F9)
@@ -122,6 +116,22 @@ fun LoginScreen(navController: NavHostController, modifier: Modifier = Modifier)
                 "Log In",
                 fontSize = 18.sp
             )
+        }
+        val loginStatus by viewModel.loginStatus.collectAsState()
+
+        LaunchedEffect(key1 = loginStatus) {
+            when(loginStatus){
+                is UserRepository.LoginResult.Success -> {
+                    navController.navigate("home"){
+                        popUpTo("welcome") { inclusive = true }
+                    }
+                }
+                is UserRepository.LoginResult.Failure -> {
+                    isLoginValid = false
+                }
+
+                null -> {}
+            }
         }
     }
 }

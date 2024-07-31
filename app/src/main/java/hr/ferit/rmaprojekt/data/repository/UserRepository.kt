@@ -60,4 +60,18 @@ class UserRepository {
         object UsernameTaken: RegistrationResult()
         data class Failure(val exception: Exception): RegistrationResult()
     }
+
+    suspend fun loginUser(email: String, password: String): LoginResult {
+        return try{
+            auth.signInWithEmailAndPassword(email, password).await()
+            LoginResult.Success
+        }catch(e: Exception){
+            LoginResult.Failure(e)
+        }
+    }
+
+    sealed class LoginResult{
+        object Success: LoginResult()
+        data class Failure(val exception: Exception): LoginResult()
+    }
 }
