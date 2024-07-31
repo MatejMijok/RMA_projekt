@@ -1,12 +1,7 @@
 package hr.ferit.rmaprojekt
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Intent
-import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,9 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -43,32 +36,17 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.firestore.FirebaseFirestore
-import hr.ferit.rmaprojekt.ui.theme.RMAProjektTheme
 
 class RegisterActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            RMAProjektTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    RegisterPage()
-                }
-            }
-            }
-        }
 }
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
-fun RegisterPage(modifier: Modifier = Modifier) {
-    val context = LocalContext.current
+fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifier) {
     var username by remember { mutableStateOf(TextFieldValue("")) }
     var firstName by remember { mutableStateOf(TextFieldValue("")) }
     var lastName by remember { mutableStateOf(TextFieldValue("")) }
@@ -239,9 +217,9 @@ fun RegisterPage(modifier: Modifier = Modifier) {
                                                 db.collection("users").document(user.uid)
                                                     .set(userData)
                                                     .addOnSuccessListener {
-                                                        val intent = Intent(context, HomeActivity::class.java)
-                                                        context.startActivity(intent)
-                                                        (context as? Activity)?.finish()
+                                                        navController.navigate("home") {
+                                                            popUpTo("welcome") { inclusive = true }
+                                                        }
                                                     }
                                                     .addOnFailureListener {
                                                         /* TODO */

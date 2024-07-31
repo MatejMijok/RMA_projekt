@@ -2,10 +2,7 @@ package hr.ferit.rmaprojekt
 
 import android.app.Activity
 import android.content.Intent
-import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,9 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,29 +31,14 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
-import hr.ferit.rmaprojekt.ui.theme.RMAProjektTheme
 
 class LoginActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            RMAProjektTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    LoginPage()
-                }
-            }
-        }
-    }
 }
 
 @Composable
-fun LoginPage(modifier: Modifier = Modifier) {
-    val context = LocalContext.current
+fun LoginScreen(navController: NavHostController, modifier: Modifier = Modifier) {
 
     var email by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
@@ -118,9 +98,9 @@ fun LoginPage(modifier: Modifier = Modifier) {
                 auth.signInWithEmailAndPassword(email.text, password.text)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            val intent = Intent(context, HomeActivity::class.java)
-                            context.startActivity(intent)
-                            (context as? Activity)?.finish()
+                            navController.navigate("home") {
+                                popUpTo("welcome") { inclusive = true }
+                            }
                         } else {
                             // If sign in fails, display a message to the user.
                             // You can handle different failure cases here

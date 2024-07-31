@@ -1,7 +1,6 @@
 package hr.ferit.rmaprojekt
 
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,9 +21,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import hr.ferit.rmaprojekt.ui.theme.RMAProjektTheme
 
@@ -32,20 +34,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        if (currentUser != null) {
-            val intent = Intent(this, HomeActivity::class.java)
-            startActivity(intent)
-            finish()
-            return
-        }
         setContent {
             RMAProjektTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    WelcomePage()
+                    AppNavigation()
                 }
             }
         }
@@ -53,8 +48,19 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun WelcomePage(modifier: Modifier = Modifier) {
-    val context = LocalContext.current
+fun AppNavigation(){
+    val navController: NavHostController = rememberNavController()
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    NavHost(navController = navController, startDestination = if (currentUser != null ) "home" else "welcome"){
+            composable("welcome") { WelcomeScreen(navController) }
+            composable("home") { HomeScreen(navController) }
+            composable("login") { LoginScreen(navController) }
+            composable("register") { RegisterScreen(navController) }
+        }
+}
+
+@Composable
+fun WelcomeScreen(navController: NavHostController, modifier: Modifier = Modifier) {
     Column (
         modifier = Modifier
             .fillMaxSize(),
@@ -67,10 +73,7 @@ fun WelcomePage(modifier: Modifier = Modifier) {
             modifier = modifier.padding(bottom = 14.dp)
         )
         Button(
-            onClick = {
-                val intent = Intent(context, LoginActivity::class.java)
-                context.startActivity(intent)
-            },
+            onClick = { navController.navigate("login") },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF4B5C92),
                 contentColor = Color(0xFFDDE1F9)
@@ -86,10 +89,7 @@ fun WelcomePage(modifier: Modifier = Modifier) {
         }
         Spacer(modifier = Modifier.height(14.dp))
         Button(
-            onClick = {
-                val intent = Intent(context, RegisterActivity::class.java)
-                context.startActivity(intent)
-            },
+            onClick = { navController.navigate("register") },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF4B5C92),
                 contentColor = Color(0xFFDDE1F9)
