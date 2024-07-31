@@ -1,4 +1,4 @@
-package hr.ferit.rmaprojekt
+package hr.ferit.rmaprojekt.view
 
 
 import android.os.Bundle

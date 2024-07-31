@@ -1,4 +1,4 @@
-package hr.ferit.rmaprojekt
+package hr.ferit.rmaprojekt.view
 
 import android.annotation.SuppressLint
 import androidx.activity.ComponentActivity
@@ -23,7 +23,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,15 +32,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthException
-import com.google.firebase.firestore.FirebaseFirestore
+import hr.ferit.rmaprojekt.data.model.User
+import hr.ferit.rmaprojekt.data.repository.UserRepository
+import hr.ferit.rmaprojekt.viewmodel.UserViewModel
+import hr.ferit.rmaprojekt.viewmodel.UserViewModelFactory
+import kotlinx.coroutines.launch
 
 class RegisterActivity : ComponentActivity() {
 }
@@ -47,6 +51,8 @@ class RegisterActivity : ComponentActivity() {
 @SuppressLint("UnrememberedMutableState")
 @Composable
 fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifier) {
+    val viewModel: UserViewModel = viewModel(factory = UserViewModelFactory(UserRepository()))
+
     var username by remember { mutableStateOf(TextFieldValue("")) }
     var firstName by remember { mutableStateOf(TextFieldValue("")) }
     var lastName by remember { mutableStateOf(TextFieldValue("")) }
@@ -62,9 +68,8 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
     var isUsernameValid by remember { mutableStateOf(true) }
     var isPasswordValid by remember { mutableStateOf(true) }
     var isRepeatPasswordValid by remember { mutableStateOf(true) }
-    val hasErrors by derivedStateOf {
-        !isUsernameValid || !isEmailValid || !isPasswordValid || !isRepeatPasswordValid
-    }
+
+    var hasErrors by remember { mutableStateOf(false) }
 
     Column (
         modifier = Modifier
@@ -196,55 +201,17 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
         )
         Button(
             onClick = {
-                val auth = FirebaseAuth.getInstance()
-                val db = FirebaseFirestore.getInstance()
-
-                db.collection("users").whereEqualTo("username", username.text).get()
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            if (task.result.isEmpty) {
-                                auth.createUserWithEmailAndPassword(email.text, password.text)
-                                    .addOnCompleteListener { authTask ->
-                                        if (authTask.isSuccessful) {
-                                            val user = auth.currentUser
-                                            user?.let {
-                                                val userData = hashMapOf(
-                                                    "username" to username.text,
-                                                    "firstName" to firstName.text,
-                                                    "lastName" to lastName.text,
-                                                    "email" to email.text
-                                                )
-                                                db.collection("users").document(user.uid)
-                                                    .set(userData)
-                                                    .addOnSuccessListener {
-                                                        navController.navigate("home") {
-                                                            popUpTo("welcome") { inclusive = true }
-                                                        }
-                                                    }
-                                                    .addOnFailureListener {
-                                                        /* TODO */
-                                                    }
-                                            }
-                                        } else {
-                                            val exception = authTask.exception as FirebaseAuthException
-                                            if (exception.errorCode == "ERROR_EMAIL_ALREADY_IN_USE") {
-                                                emailError = "Email already in use"
-                                                isEmailValid = false
-                                            } else {
-                                                emailError = ""
-                                                isEmailValid = true
-                                            }
-                                        }
-                                    }
-                            } else {
-                                // Username already exists
-                                isUsernameValid = false
-                                usernameError = "Username already taken"
-                            }
-                        } else {
-                            /* TODO */
-                        }
+                if(!hasErrors){
+                    val user = User(
+                        username = username.text,
+                        firstName = firstName.text,
+                        lastName = lastName.text,
+                        email = email.text
+                    )
+                    viewModel.viewModelScope.launch{
+                        viewModel.registerUser(user, password.text)
                     }
+                }
             },
             enabled = username.text.isNotEmpty() && email.text.isNotEmpty() && password.text.isNotEmpty() && repeatPassword.text.isNotEmpty() && !hasErrors,
             colors = ButtonDefaults.buttonColors(
@@ -266,5 +233,26 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
                 .fillMaxWidth()
                 .windowInsetsPadding(WindowInsets.ime)
         )
-    }
+
+        val registrationStatus by viewModel.registrationStatus.collectAsState()
+        LaunchedEffect(key1 = registrationStatus) {
+            when(registrationStatus){
+                is UserRepository.RegistrationResult.Success -> {
+                    navController.navigate("home") {
+                        popUpTo("welcome") { inclusive = true }
+                    }
+                }
+                is UserRepository.RegistrationResult.EmailInUse -> {
+                    emailError = "Email already in use"
+                    isEmailValid = false
+                }
+                is UserRepository.RegistrationResult.UsernameTaken -> {
+                    usernameError = "Username already taken"
+                    isUsernameValid = false
+                }
+                null -> {}
+                is UserRepository.RegistrationResult.Failure -> {}
+            }
+        }
+        }
 }
