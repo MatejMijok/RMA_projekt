@@ -5,6 +5,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -52,10 +55,64 @@ fun AppNavigation(){
     val navController: NavHostController = rememberNavController()
     val currentUser = FirebaseAuth.getInstance().currentUser
     NavHost(navController = navController, startDestination = if (currentUser != null ) "home" else "welcome"){
-            composable("welcome") { WelcomeScreen(navController) }
-            composable("home") { HomeScreen(navController) }
-            composable("login") { LoginScreen(navController) }
-            composable("register") { RegisterScreen(navController) }
+            composable(
+                "welcome",
+                enterTransition = {
+                    slideInHorizontally (
+                        initialOffsetX = { fullWidth -> -fullWidth },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                },
+                exitTransition = {
+                    slideOutHorizontally (
+                        targetOffsetX = { fullWidth -> -fullWidth },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                }
+                ) { WelcomeScreen(navController) }
+            composable(
+                "home",
+                enterTransition = {
+                    slideInHorizontally (
+                        initialOffsetX = { fullWidth -> -fullWidth },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                },
+                exitTransition = {
+                    slideOutHorizontally (
+                        targetOffsetX = { fullWidth -> -fullWidth },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                }) { HomeScreen(navController) }
+            composable(
+                "login",
+                enterTransition = {
+                    slideInHorizontally (
+                        initialOffsetX = { fullWidth -> -fullWidth },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                },
+                exitTransition = {
+                    slideOutHorizontally (
+                        targetOffsetX = { fullWidth -> -fullWidth },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                }) { LoginScreen(navController) }
+            composable(
+                "register",
+                enterTransition = {
+                    slideInHorizontally (
+                        initialOffsetX = { fullWidth -> -fullWidth },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                },
+                exitTransition = {
+                    slideOutHorizontally (
+                        targetOffsetX = { fullWidth -> -fullWidth },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                }
+            ) { RegisterScreen(navController) }
         }
 }
 
