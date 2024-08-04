@@ -1,19 +1,29 @@
 package hr.ferit.rmaprojekt.view
 
+import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import hr.ferit.rmaprojekt.data.model.User
+import hr.ferit.rmaprojekt.data.repository.UserRepository
+import hr.ferit.rmaprojekt.viewmodel.UserViewModel
+import hr.ferit.rmaprojekt.viewmodel.UserViewModelFactory
 
 
 class HomeActivity : ComponentActivity() {
@@ -22,42 +32,36 @@ class HomeActivity : ComponentActivity() {
 
 @Composable
 fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) {
-    var userData by remember { mutableStateOf<Map<String, Any>?>(null) }
-    val currentUser = FirebaseAuth.getInstance().currentUser
-    val db = FirebaseFirestore.getInstance()
-
-    if (currentUser != null) {
-        val uid = currentUser.uid
-        val userDocRef = db.collection("users").document(uid)
-        LaunchedEffect(userDocRef) {
-            userDocRef.get()
-                .addOnSuccessListener { document ->
-                    if (document != null && document.exists()) {
-                        userData = document.data
-                    }
-                }
-                .addOnFailureListener { exception ->
-                    // Handle failure
-                }
-        }
-    }
+    val userViewModel: UserViewModel = viewModel(factory = UserViewModelFactory(UserRepository()))
+    val userData by userViewModel.userData.collectAsState()
+    Log.d("HomeActivity.kt", "userData: $userData")
     Scaffold (
         modifier = modifier.fillMaxSize(),
         topBar = { HomeTopBar(navController) }
     ) { innerPadding ->
-        HomeContent(userData = userData, modifier = Modifier.padding(innerPadding))
+        if (userData == null){
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ){
+                CircularProgressIndicator(
+                    modifier = Modifier.size(96.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            }
+        }else{
+            HomeContent(userData = userData, modifier = Modifier.padding(innerPadding))
+        }
     }
 }
 
 @Composable
-fun HomeContent(userData: Map<String, Any>?, modifier: Modifier = Modifier) {
-    userData?.let { data ->
-        val username = data["username"] as? String ?: "User"
-        Text(
-            text = "Hello, $username!",
-            modifier = modifier
-        )
-    }
+fun HomeContent(userData: User?, modifier: Modifier = Modifier) {
+    Text(
+        text = "Hello, ${userData?.username}!",
+        modifier = modifier
+    )
 }
 
 

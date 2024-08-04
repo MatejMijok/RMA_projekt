@@ -1,5 +1,6 @@
 package hr.ferit.rmaprojekt.data.repository
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.firestore.FirebaseFirestore
@@ -21,7 +22,7 @@ class UserRepository {
                     return document.toObject(User::class.java)
                 }
             }catch (e: Exception){
-                // TODO()
+                Log.e("UserRepository.kt", "Error getting user data: $e")
             }
         }
         return null
