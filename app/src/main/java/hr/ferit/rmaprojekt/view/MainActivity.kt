@@ -113,6 +113,22 @@ fun AppNavigation(){
                     )
                 }
             ) { RegisterScreen(navController) }
+            composable(
+                "addNewTopic",
+                enterTransition = {
+                    slideInHorizontally (
+                        initialOffsetX = { fullWidth -> -fullWidth },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                },
+                exitTransition = {
+                    slideOutHorizontally (
+                        targetOffsetX = { fullWidth -> -fullWidth },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                }
+            ) { AddNewTopic(navController) }
+
         }
 }
 

@@ -2,6 +2,7 @@ package hr.ferit.rmaprojekt.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import hr.ferit.rmaprojekt.data.model.Flashcard
 import hr.ferit.rmaprojekt.data.model.Topic
 import hr.ferit.rmaprojekt.data.repository.TopicRepository
@@ -11,6 +12,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class TopicViewModel (private val repository: TopicRepository): ViewModel() {
+    private val firebaseAuth = FirebaseAuth.getInstance()
+    private val userId = firebaseAuth.currentUser?.uid
+
     private val _topics = MutableStateFlow<List<Topic>>(emptyList())
     val topics: StateFlow<List<Topic>> = _topics.asStateFlow()
 
@@ -28,6 +32,12 @@ class TopicViewModel (private val repository: TopicRepository): ViewModel() {
         viewModelScope.launch {
             val result = repository.getTopicFlashcards(topicId)
             _flashcards.value = result
+        }
+    }
+
+    fun saveTopicWithFlashcards(topic: Topic, flashcards: List<Flashcard>){
+        viewModelScope.launch {
+            repository.saveTopicWithFlashcards(topic, flashcards, userId!!)
         }
     }
 }

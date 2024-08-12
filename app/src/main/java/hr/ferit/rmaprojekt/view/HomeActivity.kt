@@ -48,7 +48,7 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
         modifier = modifier.fillMaxSize(),
         topBar = { HomeTopBar(navController) },
         floatingActionButton = {
-            FloatingActionButton(onClick = { /*TODO*/ }) {
+            FloatingActionButton(onClick = { navController.navigate("addNewTopic") }) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
             }
         }
