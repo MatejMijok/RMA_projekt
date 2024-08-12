@@ -1,6 +1,5 @@
 package hr.ferit.rmaprojekt.data.repository
 
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import hr.ferit.rmaprojekt.data.model.Enrollment
 import hr.ferit.rmaprojekt.data.model.Flashcard
