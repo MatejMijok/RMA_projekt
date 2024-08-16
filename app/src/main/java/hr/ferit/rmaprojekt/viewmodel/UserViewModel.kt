@@ -18,6 +18,10 @@ class UserViewModel(private val repository: UserRepository): ViewModel() {
     val loginStatus: StateFlow<UserRepository.LoginResult?> = _loginStatus.asStateFlow()
 
     init {
+        getUserData()
+    }
+
+    fun getUserData(){
         viewModelScope.launch{
             _userData.value = repository.getUserData()
         }

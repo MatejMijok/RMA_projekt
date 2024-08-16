@@ -1,10 +1,11 @@
 package hr.ferit.rmaprojekt.data.model
 
-import java.util.Date
+import com.google.firebase.firestore.FieldValue
 
 data class Topic(
+    val id: String = "",
     val name: String = "",
     val description: String = "",
     var creatorId: String = "",
-    var createdAt: Date? = null,
+    var createdAt: FieldValue? = null,
 )

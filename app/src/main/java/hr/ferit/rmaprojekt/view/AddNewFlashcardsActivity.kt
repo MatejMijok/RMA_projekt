@@ -29,22 +29,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import hr.ferit.rmaprojekt.data.model.Flashcard
 import hr.ferit.rmaprojekt.data.model.Topic
-import hr.ferit.rmaprojekt.data.repository.TopicRepository
 import hr.ferit.rmaprojekt.viewmodel.TopicViewModel
-import hr.ferit.rmaprojekt.viewmodel.TopicViewModelFactory
 
 class AddNewFlashcardsActivity : ComponentActivity() {
 }
 
 @Composable
-fun AddNewTopic(navController: NavHostController, modifier: Modifier = Modifier) {
-    val topicRepository = remember { TopicRepository() }
-    val topicViewModel: TopicViewModel = viewModel( factory = TopicViewModelFactory(topicRepository) )
-
+fun AddNewTopic(navController: NavHostController, modifier: Modifier = Modifier, topicViewModel: TopicViewModel) {
     var topicName by remember { mutableStateOf(TextFieldValue("")) }
     var topicDescription by remember { mutableStateOf(TextFieldValue("")) }
 

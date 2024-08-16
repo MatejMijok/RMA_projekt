@@ -31,25 +31,22 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import hr.ferit.rmaprojekt.data.repository.UserRepository
 import hr.ferit.rmaprojekt.viewmodel.UserViewModel
-import hr.ferit.rmaprojekt.viewmodel.UserViewModelFactory
 import kotlinx.coroutines.launch
 
 class LoginActivity : ComponentActivity() {
 }
 
 @Composable
-fun LoginScreen(navController: NavHostController, modifier: Modifier = Modifier) {
+fun LoginScreen(navController: NavHostController, modifier: Modifier = Modifier, userViewModel: UserViewModel) {
 
     var email by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
     var isLoginValid by remember { mutableStateOf(true) }
     var isEmailValid by remember { mutableStateOf(true) }
     var emailError by remember { mutableStateOf("") }
-    val viewModel: UserViewModel = viewModel(factory = UserViewModelFactory(UserRepository()))
 
     Column (
         modifier = Modifier
@@ -99,8 +96,8 @@ fun LoginScreen(navController: NavHostController, modifier: Modifier = Modifier)
         )
         Button(
             onClick = {
-                viewModel.viewModelScope.launch {
-                    viewModel.loginUser(email.text, password.text)
+                userViewModel.viewModelScope.launch {
+                    userViewModel.loginUser(email.text, password.text)
                 }
             },
             enabled = email.text.isNotEmpty() && password.text.isNotEmpty() && isEmailValid,
@@ -117,7 +114,7 @@ fun LoginScreen(navController: NavHostController, modifier: Modifier = Modifier)
                 fontSize = 18.sp
             )
         }
-        val loginStatus by viewModel.loginStatus.collectAsState()
+        val loginStatus by userViewModel.loginStatus.collectAsState()
 
         LaunchedEffect(key1 = loginStatus) {
             when(loginStatus){

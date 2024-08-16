@@ -38,12 +38,10 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import hr.ferit.rmaprojekt.data.model.User
 import hr.ferit.rmaprojekt.data.repository.UserRepository
 import hr.ferit.rmaprojekt.viewmodel.UserViewModel
-import hr.ferit.rmaprojekt.viewmodel.UserViewModelFactory
 import kotlinx.coroutines.launch
 
 class RegisterActivity : ComponentActivity() {
@@ -51,11 +49,9 @@ class RegisterActivity : ComponentActivity() {
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
-fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifier) {
-    val viewModel: UserViewModel = viewModel(factory = UserViewModelFactory(UserRepository()))
+fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifier, userViewModel: UserViewModel) {
     val focusManager = LocalFocusManager.current
 
-    var username by remember { mutableStateOf(TextFieldValue("")) }
     var firstName by remember { mutableStateOf(TextFieldValue("")) }
     var lastName by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
@@ -64,10 +60,8 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
 
     var passwordError by remember { mutableStateOf("") }
     var repeatPasswordError by remember { mutableStateOf("") }
-    var usernameError by remember { mutableStateOf("") }
     var isEmailValid by remember { mutableStateOf(true) }
     var emailError by remember { mutableStateOf("") }
-    var isUsernameValid by remember { mutableStateOf(true) }
     var isPasswordValid by remember { mutableStateOf(true) }
     var isRepeatPasswordValid by remember { mutableStateOf(true) }
 
@@ -85,25 +79,6 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
             text = "Register",
             fontSize = 40.sp,
             modifier = modifier.padding(bottom = 15.dp)
-        )
-        OutlinedTextField(
-            value = username,
-            onValueChange = {
-                username = it
-                if (!isUsernameValid){
-                    isUsernameValid = true
-                }},
-            placeholder = {Text(text = "Username")},
-            shape = RoundedCornerShape(15.dp),
-            modifier = modifier
-                .padding(bottom = 5.dp)
-                .widthIn(max = 280.dp),
-            singleLine = true,
-            isError = !isUsernameValid,
-            supportingText = {if (!isUsernameValid) {
-                Text(text = usernameError)
-                }
-            }
         )
         OutlinedTextField(
             value = firstName,
@@ -206,17 +181,16 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
                 focusManager.clearFocus()
                 if(!hasErrors){
                     val user = User(
-                        username = username.text,
                         firstName = firstName.text,
                         lastName = lastName.text,
                         email = email.text
                     )
-                    viewModel.viewModelScope.launch{
-                        viewModel.registerUser(user, password.text)
+                    userViewModel.viewModelScope.launch{
+                        userViewModel.registerUser(user, password.text)
                     }
                 }
             },
-            enabled = username.text.isNotEmpty() && email.text.isNotEmpty() && password.text.isNotEmpty() && repeatPassword.text.isNotEmpty() && !hasErrors,
+            enabled = email.text.isNotEmpty() && password.text.isNotEmpty() && repeatPassword.text.isNotEmpty() && !hasErrors,
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF4B5C92),
                 contentColor = Color(0xFFDDE1F9)
@@ -236,7 +210,7 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
                 .fillMaxWidth()
                 .windowInsetsPadding(WindowInsets.ime)
         )
-        val registrationStatus by viewModel.registrationStatus.collectAsState()
+        val registrationStatus by userViewModel.registrationStatus.collectAsState()
         LaunchedEffect(key1 = registrationStatus) {
             when(registrationStatus){
                 is UserRepository.RegistrationResult.Success -> {
@@ -247,10 +221,6 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
                 is UserRepository.RegistrationResult.EmailInUse -> {
                     emailError = "Email already in use"
                     isEmailValid = false
-                }
-                is UserRepository.RegistrationResult.UsernameTaken -> {
-                    usernameError = "Username already taken"
-                    isUsernameValid = false
                 }
                 null -> {}
                 is UserRepository.RegistrationResult.Failure -> {}

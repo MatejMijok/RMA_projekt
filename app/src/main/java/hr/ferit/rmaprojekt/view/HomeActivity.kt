@@ -1,8 +1,6 @@
 package hr.ferit.rmaprojekt.view
 
-import android.util.Log
 import androidx.activity.ComponentActivity
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -22,28 +20,26 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
 import hr.ferit.rmaprojekt.data.model.User
-import hr.ferit.rmaprojekt.data.repository.TopicRepository
-import hr.ferit.rmaprojekt.data.repository.UserRepository
 import hr.ferit.rmaprojekt.viewmodel.TopicViewModel
-import hr.ferit.rmaprojekt.viewmodel.TopicViewModelFactory
 import hr.ferit.rmaprojekt.viewmodel.UserViewModel
-import hr.ferit.rmaprojekt.viewmodel.UserViewModelFactory
 
 
 class HomeActivity : ComponentActivity() {
-    private val topicRepository = TopicRepository()
-    private val topicViewModel: TopicViewModel by viewModels{ TopicViewModelFactory(topicRepository) }
+
 }
 
 @Composable
-fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) {
-    val userViewModel: UserViewModel = viewModel(factory = UserViewModelFactory(UserRepository()))
-    val userData by userViewModel.userData.collectAsState()
-    Log.d("HomeActivity.kt", "userData: $userData")
+fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier, userViewModel: UserViewModel, topicViewmodel: TopicViewModel) {
+    val topicsWithFlashcards by topicViewmodel.topicsWithFlashcards.collectAsState()
+    val userData = userViewModel.userData.collectAsState().value
+
+    LaunchedEffect(key1 = userData) {
+        userViewModel.getUserData()
+    }
+
     Scaffold (
         modifier = modifier.fillMaxSize(),
         topBar = { HomeTopBar(navController) },
@@ -73,7 +69,7 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier) 
 @Composable
 fun HomeContent(userData: User?, modifier: Modifier = Modifier) {
     Text(
-        text = "Hello, ${userData?.username}!",
+        text = "Hello, ${userData?.firstName}!",
         modifier = modifier
     )
 }

@@ -31,14 +31,6 @@ class UserRepository {
     suspend fun registerUser(user: User, password: String): RegistrationResult {
         return try {
             withContext(Dispatchers.IO) {
-                val usernameExists = firestore.collection("users")
-                    .whereEqualTo("username", user.username)
-                    .get().await().documents.isNotEmpty()
-
-                if (usernameExists) {
-                    return@withContext RegistrationResult.UsernameTaken
-                }
-
                 val authResult = auth.createUserWithEmailAndPassword(user.email, password).await()
                 val userId = authResult.user?.uid
                 if (userId != null) {
@@ -58,7 +50,6 @@ class UserRepository {
     sealed class RegistrationResult{
         object Success: RegistrationResult()
         object EmailInUse: RegistrationResult()
-        object UsernameTaken: RegistrationResult()
         data class Failure(val exception: Exception): RegistrationResult()
     }
 

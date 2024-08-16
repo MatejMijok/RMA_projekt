@@ -26,16 +26,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
+import hr.ferit.rmaprojekt.data.repository.TopicRepository
+import hr.ferit.rmaprojekt.data.repository.UserRepository
 import hr.ferit.rmaprojekt.ui.theme.RMAProjektTheme
+import hr.ferit.rmaprojekt.viewmodel.TopicViewModel
+import hr.ferit.rmaprojekt.viewmodel.TopicViewModelFactory
+import hr.ferit.rmaprojekt.viewmodel.UserViewModel
+import hr.ferit.rmaprojekt.viewmodel.UserViewModelFactory
 
 class MainActivity : ComponentActivity() {
+    private val topicRepository = TopicRepository()
+    private val userRepository = UserRepository()
+    private lateinit var topicViewModel: TopicViewModel
+    private lateinit var userViewModel: UserViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        topicViewModel = ViewModelProvider(this, TopicViewModelFactory(topicRepository))[TopicViewModel::class.java]
+        userViewModel = ViewModelProvider(this, UserViewModelFactory(userRepository))[UserViewModel::class.java]
         enableEdgeToEdge()
         setContent {
             RMAProjektTheme {
@@ -43,7 +57,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavigation()
+                    AppNavigation(topicViewModel, userViewModel)
                 }
             }
         }
@@ -51,7 +65,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigation(){
+fun AppNavigation(
+    topicViewModel: TopicViewModel,
+    userViewModel: UserViewModel
+){
     val navController: NavHostController = rememberNavController()
     val currentUser = FirebaseAuth.getInstance().currentUser
     NavHost(navController = navController, startDestination = if (currentUser != null ) "home" else "welcome"){
@@ -83,7 +100,7 @@ fun AppNavigation(){
                         targetOffsetX = { fullWidth -> -fullWidth },
                         animationSpec = tween(durationMillis = 300)
                     )
-                }) { HomeScreen(navController) }
+                }) { HomeScreen(navController, Modifier, userViewModel, topicViewModel) }
             composable(
                 "login",
                 enterTransition = {
@@ -97,7 +114,7 @@ fun AppNavigation(){
                         targetOffsetX = { fullWidth -> -fullWidth },
                         animationSpec = tween(durationMillis = 300)
                     )
-                }) { LoginScreen(navController) }
+                }) { LoginScreen(navController, Modifier, userViewModel) }
             composable(
                 "register",
                 enterTransition = {
@@ -112,7 +129,7 @@ fun AppNavigation(){
                         animationSpec = tween(durationMillis = 300)
                     )
                 }
-            ) { RegisterScreen(navController) }
+            ) { RegisterScreen(navController, Modifier, userViewModel) }
             composable(
                 "addNewTopic",
                 enterTransition = {
@@ -127,7 +144,7 @@ fun AppNavigation(){
                         animationSpec = tween(durationMillis = 300)
                     )
                 }
-            ) { AddNewTopic(navController) }
+            ) { AddNewTopic(navController, Modifier, topicViewModel) }
 
         }
 }

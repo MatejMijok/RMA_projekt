@@ -5,33 +5,28 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import hr.ferit.rmaprojekt.data.model.Flashcard
 import hr.ferit.rmaprojekt.data.model.Topic
+import hr.ferit.rmaprojekt.data.model.TopicWithFlashcards
 import hr.ferit.rmaprojekt.data.repository.TopicRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import hr.ferit.rmaprojekt.data.repository.Result
 
 class TopicViewModel (private val repository: TopicRepository): ViewModel() {
     private val firebaseAuth = FirebaseAuth.getInstance()
     private val userId = firebaseAuth.currentUser?.uid
 
-    private val _topics = MutableStateFlow<List<Topic>>(emptyList())
-    val topics: StateFlow<List<Topic>> = _topics.asStateFlow()
+    private val _topicsWithFlashcards = MutableStateFlow<Result<List<TopicWithFlashcards>>>(Result.Loading)
+    val topicsWithFlashcards: StateFlow<Result<List<TopicWithFlashcards>>> = _topicsWithFlashcards.asStateFlow()
 
-    private val _flashcards = MutableStateFlow<List<Flashcard>>(emptyList())
-    val flashcards: StateFlow<List<Flashcard>> = _flashcards.asStateFlow()
-
-    fun fetchUserTopics(userId: String){
-        viewModelScope.launch {
-            val result = repository.getUserTopics(userId)
-            _topics.value = result
-        }
+   init{
+        getTopics()
     }
 
-    fun fetchTopicFlashcards(topicId: String){
+    fun getTopics(){
         viewModelScope.launch {
-            val result = repository.getTopicFlashcards(topicId)
-            _flashcards.value = result
+            _topicsWithFlashcards.value = repository.getTopicsWithFlashcards()
         }
     }
 
