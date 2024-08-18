@@ -105,6 +105,7 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
             onValueChange = {
                 email = it
                 isEmailValid = android.util.Patterns.EMAIL_ADDRESS.matcher(it.text).matches()
+                emailError = if (android.util.Patterns.EMAIL_ADDRESS.matcher(it.text).matches()) "" else "Invalid e-mail address"
                             },
             placeholder = {Text(text = "E-mail")},
             shape = RoundedCornerShape(15.dp),
@@ -114,7 +115,7 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
             singleLine = true,
             isError = !isEmailValid,
             supportingText = {if (!isEmailValid) {
-                Text(text = "Invalid e-mail address")
+                Text(text = emailError)
                 }
             }
         )
@@ -190,7 +191,7 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
                     }
                 }
             },
-            enabled = email.text.isNotEmpty() && password.text.isNotEmpty() && repeatPassword.text.isNotEmpty() && !hasErrors,
+            enabled = email.text.isNotEmpty() && password.text.isNotEmpty() && repeatPassword.text.isNotEmpty() && password.text == repeatPassword.text && !hasErrors,
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF4B5C92),
                 contentColor = Color(0xFFDDE1F9)
@@ -214,6 +215,8 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
         LaunchedEffect(key1 = registrationStatus) {
             when(registrationStatus){
                 is UserRepository.RegistrationResult.Success -> {
+                    userViewModel.getUserData()
+
                     navController.navigate("home") {
                         popUpTo("welcome") { inclusive = true }
                     }

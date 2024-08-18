@@ -15,7 +15,6 @@ import hr.ferit.rmaprojekt.data.repository.Result
 
 class TopicViewModel (private val repository: TopicRepository): ViewModel() {
     private val firebaseAuth = FirebaseAuth.getInstance()
-    private val userId = firebaseAuth.currentUser?.uid
 
     private val _topicsWithFlashcards = MutableStateFlow<Result<List<TopicWithFlashcards>>>(Result.Loading)
     val topicsWithFlashcards: StateFlow<Result<List<TopicWithFlashcards>>> = _topicsWithFlashcards.asStateFlow()
@@ -30,7 +29,16 @@ class TopicViewModel (private val repository: TopicRepository): ViewModel() {
         }
     }
 
+    fun clearTopics(){
+        viewModelScope.launch {
+            _topicsWithFlashcards.value = Result.Loading
+        }
+    }
+
     fun saveTopicWithFlashcards(topic: Topic, flashcards: List<Flashcard>){
+        firebaseAuth.currentUser?.reload()
+        val userId = firebaseAuth.currentUser?.uid
+
         viewModelScope.launch {
             repository.saveTopicWithFlashcards(topic, flashcards, userId!!)
         }

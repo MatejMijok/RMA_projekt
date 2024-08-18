@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -53,11 +54,12 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             RMAProjektTheme {
+                val navController: NavHostController = rememberNavController()
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavigation(topicViewModel, userViewModel)
+                    AppNavigation(navController, topicViewModel, userViewModel)
                 }
             }
         }
@@ -66,11 +68,11 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppNavigation(
+    navController: NavHostController,
     topicViewModel: TopicViewModel,
     userViewModel: UserViewModel
 ){
-    val navController: NavHostController = rememberNavController()
-    val currentUser = FirebaseAuth.getInstance().currentUser
+    var currentUser = FirebaseAuth.getInstance().currentUser
     NavHost(navController = navController, startDestination = if (currentUser != null ) "home" else "welcome"){
             composable(
                 "welcome",

@@ -14,6 +14,7 @@ class UserRepository {
     private val firestore = FirebaseFirestore.getInstance()
 
     suspend fun getUserData(): User?{
+        auth.currentUser?.reload()?.await()
         val currentUser = auth.currentUser
         if(currentUser != null){
             try {
@@ -32,6 +33,7 @@ class UserRepository {
         return try {
             withContext(Dispatchers.IO) {
                 val authResult = auth.createUserWithEmailAndPassword(user.email, password).await()
+                auth.currentUser?.reload()?.await()
                 val userId = authResult.user?.uid
                 if (userId != null) {
                     firestore.collection("users").document(userId).set(user).await()
@@ -56,6 +58,7 @@ class UserRepository {
     suspend fun loginUser(email: String, password: String): LoginResult {
         return try{
             auth.signInWithEmailAndPassword(email, password).await()
+            auth.currentUser?.reload()?.await()
             LoginResult.Success
         }catch(e: Exception){
             LoginResult.Failure(e)

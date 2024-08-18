@@ -7,5 +7,4 @@ data class Topic(
     val name: String = "",
     val description: String = "",
     var creatorId: String = "",
-    var createdAt: FieldValue? = null,
 )

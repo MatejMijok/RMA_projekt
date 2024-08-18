@@ -27,6 +27,16 @@ class UserViewModel(private val repository: UserRepository): ViewModel() {
         }
     }
 
+    fun clearUserData(){
+        viewModelScope.launch {
+            _userData.value = null
+        }
+    }
+
+    fun resetLoginStatus() {
+        _loginStatus.value = null
+    }
+
     suspend fun registerUser(user: User, password: String){
         viewModelScope.launch {
             _registrationStatus.value = repository.registerUser(user, password)

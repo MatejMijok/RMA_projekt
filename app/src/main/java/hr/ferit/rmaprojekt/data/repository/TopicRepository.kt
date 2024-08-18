@@ -1,5 +1,6 @@
 package hr.ferit.rmaprojekt.data.repository
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -15,8 +16,7 @@ class TopicRepository {
 
     suspend fun getTopicsWithFlashcards(): Result<List<TopicWithFlashcards>>{
         return try {
-            val currentUserId = firebaseAuth.currentUser?.uid
-                ?: return Result.Failure(Exception("User not authenticated"))
+            val currentUserId = firebaseAuth.currentUser?.uid ?: return Result.Failure(Exception("User not authenticated"))
 
             val topics = db.collection("topics")
                 .whereEqualTo("creatorId", currentUserId)
@@ -27,6 +27,7 @@ class TopicRepository {
                     .get().await().toObjects(Flashcard::class.java)
                 TopicWithFlashcards(topic, flashcards)
             }
+            Log.d("TopicRepository", "Topics with flashcards: $topics")
 
             Result.Success(topicsWithFlashcards)
         } catch (e: Exception) {
@@ -36,7 +37,6 @@ class TopicRepository {
 
     suspend fun saveTopicWithFlashcards(topic: Topic, flashcards: List<Flashcard>, userId: String) {
         topic.creatorId = userId
-        topic.createdAt = FieldValue.serverTimestamp()
         val topicsCollection = db.collection("topics")
         val topicDocument = topicsCollection.add(topic).await()
         val topicId = topicDocument.id
