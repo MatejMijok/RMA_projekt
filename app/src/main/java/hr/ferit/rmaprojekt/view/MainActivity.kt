@@ -147,7 +147,20 @@ fun AppNavigation(
                     )
                 }
             ) { AddNewTopic(navController, Modifier, topicViewModel) }
-
+        composable(
+            "topicDetails/{topicId}",
+            enterTransition = {
+                slideInHorizontally (
+                    initialOffsetX = { fullWidth -> -fullWidth },
+                    animationSpec = tween(durationMillis = 300)
+                )
+            },
+            exitTransition = {
+                slideOutHorizontally (
+                    targetOffsetX = { fullWidth -> -fullWidth },
+                    animationSpec = tween(durationMillis = 300)
+                )
+            }) { HomeScreen(navController, Modifier, userViewModel, topicViewModel) }
         }
 }
 

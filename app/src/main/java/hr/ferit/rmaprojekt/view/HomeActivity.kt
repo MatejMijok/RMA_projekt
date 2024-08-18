@@ -1,9 +1,9 @@
 package hr.ferit.rmaprojekt.view
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -29,11 +29,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.ktx.Firebase
 import hr.ferit.rmaprojekt.data.model.Topic
 import hr.ferit.rmaprojekt.data.model.User
 import hr.ferit.rmaprojekt.viewmodel.TopicViewModel
@@ -119,7 +117,7 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier, 
                 }
                 is Result.Success -> {
                     val topics = (topicsWithFlashcards as Result.Success).data.map { it.topic }
-                    HomeContent(userData = userData, modifier = Modifier.padding(innerPadding), topics = topics)
+                    HomeContent(userData = userData, modifier = Modifier.padding(innerPadding), topics = topics, navController)
                 }
                 is Result.Failure -> {
                     Text(text = "Failed to load topics", modifier = Modifier.padding(innerPadding))
@@ -130,12 +128,14 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier, 
 }
 
 @Composable
-fun HomeContent(userData: User?, modifier: Modifier = Modifier, topics: List<Topic>) {
+fun HomeContent(userData: User?, modifier: Modifier = Modifier, topics: List<Topic>, navController: NavHostController) {
     Column(
-        modifier = Modifier.padding(top = 96.dp, start = 8.dp, end = 8.dp)
+        modifier = modifier.padding(start = 8.dp, end = 8.dp)
             .fillMaxWidth()
     ){
-        TopicList(topics = topics)
+        TopicList(topics = topics){ topic ->
+            navController.navigate("topicDetails/${topic.id}")
+        }
     }
 }
 
@@ -166,9 +166,10 @@ fun HomeTopBar(navController: NavHostController, userViewModel: UserViewModel, t
 }
 
 @Composable
-fun TopicCard(topic: Topic, modifier: Modifier = Modifier){
+fun TopicCard(topic: Topic, modifier: Modifier = Modifier, onTopicClick: (Topic) -> Unit){
     Card(
-        modifier = modifier.padding(bottom = 8.dp),
+        modifier = modifier.padding(bottom = 8.dp)
+            .clickable { onTopicClick(topic) },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
@@ -193,12 +194,12 @@ fun TopicCard(topic: Topic, modifier: Modifier = Modifier){
 }
 
 @Composable
-fun TopicList(topics: List<Topic>, modifier: Modifier = Modifier){
+fun TopicList(topics: List<Topic>, modifier: Modifier = Modifier, onTopicClick: (Topic) -> Unit){
     LazyColumn(
         modifier = modifier.padding(8.dp)
     ){
         items(topics.size){ index ->
-            TopicCard(topic = topics[index])
+            TopicCard(topic = topics[index], onTopicClick = onTopicClick)
         }
     }
 }
