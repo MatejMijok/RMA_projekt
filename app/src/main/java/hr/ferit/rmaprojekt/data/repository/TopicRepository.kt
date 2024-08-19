@@ -2,7 +2,6 @@ package hr.ferit.rmaprojekt.data.repository
 
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import hr.ferit.rmaprojekt.data.model.Enrollment
 import hr.ferit.rmaprojekt.data.model.Flashcard
@@ -16,6 +15,7 @@ class TopicRepository {
 
     suspend fun getTopicsWithFlashcards(): Result<List<TopicWithFlashcards>>{
         return try {
+            firebaseAuth.currentUser?.reload()?.await()
             val currentUserId = firebaseAuth.currentUser?.uid ?: return Result.Failure(Exception("User not authenticated"))
 
             val topics = db.collection("topics")

@@ -27,7 +27,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -160,7 +159,21 @@ fun AppNavigation(
                     targetOffsetX = { fullWidth -> -fullWidth },
                     animationSpec = tween(durationMillis = 300)
                 )
-            }) { HomeScreen(navController, Modifier, userViewModel, topicViewModel) }
+            }) { TopicDetailScreen(navController, Modifier, userViewModel, topicViewModel, topicId = it.arguments?.getString("topicId")!!) }
+        composable(
+            "flashcardsScreen/{topicId}",
+            enterTransition = {
+                slideInHorizontally (
+                    initialOffsetX = { fullWidth -> -fullWidth },
+                    animationSpec = tween(durationMillis = 300)
+                )
+            },
+            exitTransition = {
+                slideOutHorizontally (
+                    targetOffsetX = { fullWidth -> -fullWidth },
+                    animationSpec = tween(durationMillis = 300)
+                )
+            }) { FlashcardsScreen(navController, Modifier, topicViewModel, topicId = it.arguments?.getString("topicId")!!) }
         }
 }
 

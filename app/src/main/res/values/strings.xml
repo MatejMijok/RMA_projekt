@@ -4,4 +4,6 @@
     <string name="title_activity_register">RegisterActivity</string>
     <string name="title_activity_home">HomeActivity</string>
     <string name="title_activity_add_new_flashcards">AddNewFlashcardsActivity</string>
+    <string name="title_activity_topic_detail">TopicDetailActivity</string>
+    <string name="title_activity_flashcards">FlashcardsActivity</string>
 </resources>

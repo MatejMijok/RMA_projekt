@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -25,7 +26,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,7 +85,7 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier, 
         modifier = modifier.fillMaxSize(),
         topBar = { HomeTopBar(navController, userViewModel, topicViewmodel) },
         floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate("addNewTopic") }) {
+            FloatingActionButton(onClick = { navController.navigate("addNewTopic") }, containerColor = MaterialTheme.colorScheme.primary) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
             }
         }
@@ -143,8 +143,8 @@ fun HomeContent(userData: User?, modifier: Modifier = Modifier, topics: List<Top
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeTopBar(navController: NavHostController, userViewModel: UserViewModel, topicViewModel: TopicViewModel) {
-    TopAppBar(
-        title = { Text(text = "Home") },
+    CenterAlignedTopAppBar(
+        title = { Text(text = "Home", style = MaterialTheme.typography.headlineLarge) },
         navigationIcon = {
             Button(
                 onClick = {
