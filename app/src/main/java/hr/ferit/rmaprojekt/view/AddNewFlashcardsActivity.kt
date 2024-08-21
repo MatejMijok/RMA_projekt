@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -26,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,13 +37,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
 import hr.ferit.rmaprojekt.data.model.Flashcard
 import hr.ferit.rmaprojekt.data.model.Topic
 import hr.ferit.rmaprojekt.viewmodel.TopicViewModel
+import kotlinx.coroutines.launch
 
 class AddNewFlashcardsActivity : ComponentActivity() {
 }
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun AddNewTopic(navController: NavHostController, modifier: Modifier = Modifier, topicViewModel: TopicViewModel) {
     var topicName by remember { mutableStateOf(TextFieldValue("")) }
@@ -53,7 +60,10 @@ fun AddNewTopic(navController: NavHostController, modifier: Modifier = Modifier,
     var isTopicValid by remember { mutableStateOf(true) }
     var isDescriptionValid by remember { mutableStateOf(true) }
 
-    var flashcards by remember { mutableStateOf(mutableStateListOf<Flashcard>())}
+    var flashcards by remember { mutableStateOf(mutableStateListOf(Flashcard())) }
+    val pagerState = rememberPagerState()
+    val scope = rememberCoroutineScope()
+
     Scaffold (
         modifier = modifier.fillMaxSize(),
         topBar = { NewFlashcardTopBar() },
@@ -67,7 +77,6 @@ fun AddNewTopic(navController: NavHostController, modifier: Modifier = Modifier,
                 .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ){
-            Spacer(modifier = Modifier.padding(16.dp))
             OutlinedTextField(
                 value = topicName,
                 onValueChange = {
@@ -100,28 +109,48 @@ fun AddNewTopic(navController: NavHostController, modifier: Modifier = Modifier,
             )
             Text(
                 text = "Flashcards",
-                fontSize = 36.sp,
+                style = MaterialTheme.typography.headlineMedium,
                 modifier = modifier.padding(bottom = 14.dp)
             )
-            flashcards.forEachIndexed{ index, flashcard ->
+            HorizontalPager(
+                count = flashcards.size,
+                state = pagerState,
+                modifier = modifier
+                    .fillMaxWidth()
+            ){  page ->
                 FlashcardInput(
-                    index = index,
-                    flashcard = flashcard,
+                    index = page,
+                    flashcard = flashcards[page],
                     onFlashcardChange = { updatedFlashcard ->
-                        flashcards[index] = updatedFlashcard
+                        flashcards[page] = updatedFlashcard
                     },
-                    onDelete = { flashcards.removeAt(index) }
+                    onDelete = {
+                        if(flashcards.size > 1){
+                            flashcards.removeAt(page)
+                            if(pagerState.currentPage >= flashcards.size){
+                                scope.launch{
+                                    pagerState.animateScrollToPage(flashcards.size - 1)
+                                }
+                            }
+                        }
+                    },
+                    deleteEnabled = flashcards.size > 1
                 )
             }
             Button(
-                onClick = { flashcards.add(Flashcard()) },
+                onClick = {
+                    flashcards.add(Flashcard())
+                    scope.launch {
+                        pagerState.animateScrollToPage(flashcards.size-1)
+                    }
+                          },
                 modifier = modifier
                     .width(192.dp)
                     .height(48.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF4B5C92),
                     contentColor = Color(0xFFDDE1F9)
-                )
+                ),
             ) {
                 Text(
                     text = "Add flashcard",
@@ -161,10 +190,11 @@ fun FlashcardInput(
     flashcard: Flashcard,
     onFlashcardChange: (Flashcard) -> Unit,
     onDelete: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    deleteEnabled: Boolean
 ){
-    var question by remember { mutableStateOf(TextFieldValue("")) }
-    var answer by remember { mutableStateOf(TextFieldValue("")) }
+    var question by remember { mutableStateOf(TextFieldValue(flashcard.question)) }
+    var answer by remember { mutableStateOf(TextFieldValue(flashcard.answer)) }
 
     var questionError by remember { mutableStateOf("") }
     var answerError by remember { mutableStateOf("") }
@@ -190,7 +220,7 @@ fun FlashcardInput(
             onValueChange = {
                 question = it
                 questionError = "Question cannot be empty"
-                onFlashcardChange(flashcard.copy(question = question.text))
+                onFlashcardChange(flashcard.copy(question = it.text))
             },
             placeholder = { Text(text = "Question") },
             shape = RoundedCornerShape(15.dp),
@@ -206,7 +236,7 @@ fun FlashcardInput(
             onValueChange = {
                 answer = it
                 answerError = "Answer cannot be empty"
-                onFlashcardChange(flashcard.copy(answer = answer.text))
+                onFlashcardChange(flashcard.copy(answer = it.text))
             },
             placeholder = { Text(text = "Answer") },
             shape = RoundedCornerShape(15.dp),
@@ -225,7 +255,8 @@ fun FlashcardInput(
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Red,
                 contentColor = Color.White
-            )
+            ),
+            enabled = deleteEnabled
         ) {
             Text("Delete flashcard", fontSize = 18.sp)
         }
