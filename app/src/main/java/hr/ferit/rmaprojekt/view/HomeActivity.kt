@@ -15,7 +15,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -24,13 +25,17 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.firebase.auth.FirebaseAuth
 import hr.ferit.rmaprojekt.data.model.Topic
 import hr.ferit.rmaprojekt.data.model.User
@@ -84,6 +89,7 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier, 
     Scaffold (
         modifier = modifier.fillMaxSize(),
         topBar = { HomeTopBar(navController, userViewModel, topicViewmodel) },
+        bottomBar = { BottomNavBar(navController = navController, userViewModel = userViewModel, topicViewModel = topicViewmodel) },
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 topicViewmodel.topicWithFlashcards = null
@@ -133,7 +139,8 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier, 
 @Composable
 fun HomeContent(userData: User?, modifier: Modifier = Modifier, topics: List<Topic>, navController: NavHostController) {
     Column(
-        modifier = modifier.padding(start = 8.dp, end = 8.dp)
+        modifier = modifier
+            .padding(start = 8.dp, end = 8.dp)
             .fillMaxWidth()
     ){
         TopicList(topics = topics){ topic ->
@@ -148,30 +155,50 @@ fun HomeContent(userData: User?, modifier: Modifier = Modifier, topics: List<Top
 fun HomeTopBar(navController: NavHostController, userViewModel: UserViewModel, topicViewModel: TopicViewModel) {
     CenterAlignedTopAppBar(
         title = { Text(text = "Home", style = MaterialTheme.typography.headlineLarge) },
-        navigationIcon = {
-            Button(
-                onClick = {
-                    FirebaseAuth.getInstance().signOut()
-                    userViewModel.clearUserData()
-                    topicViewModel.clearTopics()
-                    userViewModel.resetLoginStatus()
-
-                    navController.navigate("welcome") {
-                        popUpTo(0) { inclusive = true }
-                    }
-                },
-                modifier = Modifier.padding(start = 12.dp)
-            ) {
-                Text(text = "Logout")
-            }
-        }
     )
+}
+
+@Composable
+fun BottomNavBar(navController: NavHostController, modifier: Modifier = Modifier, userViewModel: UserViewModel, topicViewModel: TopicViewModel){
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntry?.destination?.route
+
+    NavigationBar {
+        NavigationBarItem(
+            selected = currentRoute == "home",
+            onClick = {
+                navController.navigate("home"){
+                    popUpTo(navController.graph.findStartDestination().id){
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+                      },
+            icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
+            )
+        NavigationBarItem(
+            selected = currentRoute == "profile",
+            onClick = {
+                navController.navigate("profile"){
+                    popUpTo(navController.graph.findStartDestination().id){
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            },
+            icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
+        )
+
+   }
 }
 
 @Composable
 fun TopicCard(topic: Topic, modifier: Modifier = Modifier, onTopicClick: (Topic) -> Unit){
     Card(
-        modifier = modifier.padding(bottom = 8.dp)
+        modifier = modifier
+            .padding(bottom = 8.dp)
             .clickable { onTopicClick(topic) },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(

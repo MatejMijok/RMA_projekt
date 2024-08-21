@@ -6,4 +6,5 @@
     <string name="title_activity_add_new_flashcards">AddNewFlashcardsActivity</string>
     <string name="title_activity_topic_detail">TopicDetailActivity</string>
     <string name="title_activity_flashcards">FlashcardsActivity</string>
+    <string name="title_activity_profile">ProfileActivity</string>
 </resources>

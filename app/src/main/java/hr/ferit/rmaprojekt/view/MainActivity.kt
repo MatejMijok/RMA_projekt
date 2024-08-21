@@ -91,16 +91,24 @@ fun AppNavigation(
             composable(
                 "home",
                 enterTransition = {
-                    slideInHorizontally (
-                        initialOffsetX = { fullWidth -> -fullWidth },
-                        animationSpec = tween(durationMillis = 300)
-                    )
+                    if (initialState.destination.route != "profile"){
+                        slideInHorizontally (
+                            initialOffsetX = { fullWidth -> -fullWidth },
+                            animationSpec = tween(durationMillis = 300)
+                        )
+                    }else{
+                        null
+                    }
                 },
                 exitTransition = {
+                    if(targetState.destination.route != "profile"){
                     slideOutHorizontally (
                         targetOffsetX = { fullWidth -> -fullWidth },
                         animationSpec = tween(durationMillis = 300)
                     )
+                    }else{
+                        null
+                    }
                 }) { HomeScreen(navController, Modifier, userViewModel, topicViewModel) }
             composable(
                 "login",
@@ -174,6 +182,29 @@ fun AppNavigation(
                     animationSpec = tween(durationMillis = 300)
                 )
             }) { FlashcardsScreen(navController, Modifier, topicViewModel, topicId = it.arguments?.getString("topicId")!!) }
+        composable(
+            "profile",
+            enterTransition = {
+                if(initialState.destination.route != "home"){
+                slideInHorizontally (
+                    initialOffsetX = { fullWidth -> -fullWidth },
+                    animationSpec = tween(durationMillis = 300)
+                )
+                }else{
+                    null
+                }
+            },
+            exitTransition = {
+                if(targetState.destination.route != "home"){
+                    slideOutHorizontally (
+                        targetOffsetX = { fullWidth -> -fullWidth },
+                        animationSpec = tween(durationMillis = 300)
+                    )
+                }else{
+                    null
+                }
+            }
+        ) { ProfileScreen(navController, Modifier, userViewModel, topicViewModel) }
         }
 }
 
