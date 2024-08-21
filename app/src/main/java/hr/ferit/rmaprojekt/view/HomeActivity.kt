@@ -85,7 +85,10 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier, 
         modifier = modifier.fillMaxSize(),
         topBar = { HomeTopBar(navController, userViewModel, topicViewmodel) },
         floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate("addNewTopic") }, containerColor = MaterialTheme.colorScheme.primary) {
+            FloatingActionButton(onClick = {
+                topicViewmodel.topicWithFlashcards = null
+                navController.navigate("addNewTopic") },
+                containerColor = MaterialTheme.colorScheme.primary) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
             }
         }

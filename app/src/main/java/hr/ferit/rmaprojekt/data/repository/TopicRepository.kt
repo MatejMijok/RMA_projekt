@@ -3,6 +3,7 @@ package hr.ferit.rmaprojekt.data.repository
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import hr.ferit.rmaprojekt.data.model.Enrollment
 import hr.ferit.rmaprojekt.data.model.Flashcard
 import hr.ferit.rmaprojekt.data.model.Topic
@@ -51,6 +52,33 @@ class TopicRepository {
         val enrollmentsCollection = topicsCollection.document(topicId).collection("enrollments")
         val enrollment = Enrollment(userId = userId)
         enrollmentsCollection.add(enrollment).await()
+    }
+
+   suspend fun updateTopicWithFlashcards(topic: Topic, flashcards: List<Flashcard>){
+       firebaseAuth.currentUser?.reload()?.await()
+       try{
+           val topicDocument = db.collection("topics").document(topic.id)
+           topicDocument.set(topic, SetOptions.merge()).await()
+
+           val flashcardsCollection = topicDocument.collection("flashcards")
+           flashcardsCollection.get().await().documents.forEach{ document ->
+               document.reference.delete().await()
+           }
+           flashcards.forEach{ flashcard ->
+               flashcardsCollection.add(flashcard).await()
+           }
+        }catch(e: Exception){
+            //
+        }
+    }
+
+    suspend fun deleteTopic(topicId: String){
+        try {
+            val topicDocument = db.collection("topics")
+            topicDocument.document(topicId).delete().await()
+        }catch (e: Exception){
+            //
+        }
     }
 }
 

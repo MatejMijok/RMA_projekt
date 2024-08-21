@@ -19,6 +19,8 @@ class TopicViewModel (private val repository: TopicRepository): ViewModel() {
     private val _topicsWithFlashcards = MutableStateFlow<Result<List<TopicWithFlashcards>>>(Result.Loading)
     val topicsWithFlashcards: StateFlow<Result<List<TopicWithFlashcards>>> = _topicsWithFlashcards.asStateFlow()
 
+    var topicWithFlashcards: TopicWithFlashcards? = null
+
    init{
         getTopics()
     }
@@ -41,6 +43,20 @@ class TopicViewModel (private val repository: TopicRepository): ViewModel() {
 
         viewModelScope.launch {
             repository.saveTopicWithFlashcards(topic, flashcards, userId!!)
+        }
+    }
+
+    fun updateTopicWithFlashcards(topic: Topic, flashcards: List<Flashcard>){
+        firebaseAuth.currentUser?.reload()
+
+        viewModelScope.launch{
+            repository.updateTopicWithFlashcards(topic, flashcards)
+        }
+    }
+
+    fun deleteTopic(topic: String){
+        viewModelScope.launch {
+            repository.deleteTopic(topic)
         }
     }
 }

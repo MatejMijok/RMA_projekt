@@ -51,8 +51,10 @@ class AddNewFlashcardsActivity : ComponentActivity() {
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun AddNewTopic(navController: NavHostController, modifier: Modifier = Modifier, topicViewModel: TopicViewModel) {
-    var topicName by remember { mutableStateOf(TextFieldValue("")) }
-    var topicDescription by remember { mutableStateOf(TextFieldValue("")) }
+    val topic = topicViewModel.topicWithFlashcards
+
+    var topicName by remember { mutableStateOf(TextFieldValue(topic?.topic?.name ?: "")) }
+    var topicDescription by remember { mutableStateOf(TextFieldValue(topic?.topic?.description ?: "")) }
 
     var topicError by remember { mutableStateOf("") }
     var descriptionError by remember { mutableStateOf("") }
@@ -60,7 +62,16 @@ fun AddNewTopic(navController: NavHostController, modifier: Modifier = Modifier,
     var isTopicValid by remember { mutableStateOf(true) }
     var isDescriptionValid by remember { mutableStateOf(true) }
 
-    var flashcards by remember { mutableStateOf(mutableStateListOf(Flashcard())) }
+    var flashcards by remember { mutableStateOf(mutableStateListOf<Flashcard>()) }
+
+    if(topic != null){
+        flashcards.clear()
+        flashcards.addAll(topic.flashcards)
+    }else{
+        flashcards.clear()
+        flashcards.add(Flashcard())
+    }
+
     val pagerState = rememberPagerState()
     val scope = rememberCoroutineScope()
 
@@ -160,9 +171,19 @@ fun AddNewTopic(navController: NavHostController, modifier: Modifier = Modifier,
             Spacer(modifier = Modifier.height(14.dp))
             Button(
                 onClick = {
-                    val topic = Topic(name = topicName.text, description = topicDescription.text)
-                    topicViewModel.saveTopicWithFlashcards(topic, flashcards)
-                    navController.navigate("home")
+                    val immutableFlashcards = flashcards.toList()
+                    if (topic != null){
+                        topicViewModel.topicWithFlashcards = null
+                        val updatedTopic = topic.copy(Topic(name = topicName.text, description = topicDescription.text, id = topic.topic.id, creatorId = topic.topic.creatorId))
+                        topicViewModel.updateTopicWithFlashcards(updatedTopic.topic, immutableFlashcards)
+                    }else{
+                        val newTopic = Topic(name = topicName.text, description = topicDescription.text)
+                        topicViewModel.saveTopicWithFlashcards(newTopic, immutableFlashcards)
+                    }
+
+                    navController.navigate("home"){
+                        popUpTo(0) { inclusive = true }
+                    }
                 },
                 enabled = topicName.text.isNotEmpty() && topicDescription.text.isNotEmpty() && flashcards.isNotEmpty() && flashcards.all { it.question.isNotEmpty() && it.answer.isNotEmpty() },
                 colors = ButtonDefaults.buttonColors(
@@ -174,7 +195,7 @@ fun AddNewTopic(navController: NavHostController, modifier: Modifier = Modifier,
                     .height(48.dp)
             ) {
                 Text(
-                    "Create topic",
+                    text = if (topic == null) "Create topic" else "Edit topic",
                     fontSize = 18.sp
                 )
             }
@@ -253,8 +274,8 @@ fun FlashcardInput(
                 .width(192.dp)
                 .height(48.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Red,
-                contentColor = Color.White
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.onErrorContainer
             ),
             enabled = deleteEnabled
         ) {
