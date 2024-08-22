@@ -16,6 +16,7 @@ class UserViewModel(private val repository: UserRepository): ViewModel() {
     val registrationStatus: StateFlow<UserRepository.RegistrationResult?> = _registrationStatus.asStateFlow()
     private val _loginStatus = MutableStateFlow<UserRepository.LoginResult?>(null)
     val loginStatus: StateFlow<UserRepository.LoginResult?> = _loginStatus.asStateFlow()
+    var currentUserId: String? = null
 
     init {
         getUserData()
@@ -24,6 +25,7 @@ class UserViewModel(private val repository: UserRepository): ViewModel() {
     fun getUserData(){
         viewModelScope.launch{
             _userData.value = repository.getUserData()
+            currentUserId = repository.getUserId()
         }
     }
 

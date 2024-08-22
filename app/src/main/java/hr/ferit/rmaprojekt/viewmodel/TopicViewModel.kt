@@ -59,4 +59,10 @@ class TopicViewModel (private val repository: TopicRepository): ViewModel() {
             repository.deleteTopic(topic)
         }
     }
+
+    fun addEnrollment(topicId: String, userId: String){
+        viewModelScope.launch {
+            repository.addEnrollment(topicId, userId)
+        }
+    }
 }

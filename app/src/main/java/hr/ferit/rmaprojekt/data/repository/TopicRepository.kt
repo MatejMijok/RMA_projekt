@@ -19,9 +19,20 @@ class TopicRepository {
             firebaseAuth.currentUser?.reload()?.await()
             val currentUserId = firebaseAuth.currentUser?.uid ?: return Result.Failure(Exception("User not authenticated"))
 
-            val topics = db.collection("topics")
-                .whereEqualTo("creatorId", currentUserId)
-                .get().await().toObjects(Topic::class.java)
+            val enrollmentDocs = db.collection("enrollments")
+                .whereEqualTo("userId", currentUserId)
+                .get().await()
+
+            Log.d("TopicRepository", "Enrollment documents: $enrollmentDocs")
+
+            val topicIds = enrollmentDocs.documents.mapNotNull { it.getString("topicId") }
+            Log.d("TopicRepository", "Topic IDs: $topicIds")
+
+            val topics = topicIds.mapNotNull { topicId ->
+                db.collection("topics").document(topicId).get().await().toObject(Topic::class.java)
+            }
+
+            Log.d("TopicRepository", "Topics: $topics")
 
             val topicsWithFlashcards = topics.map { topic ->
                 val flashcards = db.collection("topics/${topic.id}/flashcards")
@@ -39,6 +50,7 @@ class TopicRepository {
     suspend fun saveTopicWithFlashcards(topic: Topic, flashcards: List<Flashcard>, userId: String) {
         topic.creatorId = userId
         val topicsCollection = db.collection("topics")
+        val enrollmentsCollection = db.collection("enrollments")
         val topicDocument = topicsCollection.add(topic).await()
         val topicId = topicDocument.id
 
@@ -49,8 +61,7 @@ class TopicRepository {
             flashcardsCollection.add(flashcard).await()
         }
 
-        val enrollmentsCollection = topicsCollection.document(topicId).collection("enrollments")
-        val enrollment = Enrollment(userId = userId)
+        val enrollment = Enrollment(userId = userId, topicId = topicId)
         enrollmentsCollection.add(enrollment).await()
     }
 
@@ -76,6 +87,17 @@ class TopicRepository {
         try {
             val topicDocument = db.collection("topics")
             topicDocument.document(topicId).delete().await()
+        }catch (e: Exception){
+            //
+        }
+    }
+
+    suspend fun addEnrollment(topicId: String, userId: String){
+        firebaseAuth.currentUser?.reload()?.await()
+        try{
+            val enrollmentCollection = db.collection("enrollments")
+            val enrollment = Enrollment(userId = userId, topicId = topicId)
+            enrollmentCollection.add(enrollment).await()
         }catch (e: Exception){
             //
         }

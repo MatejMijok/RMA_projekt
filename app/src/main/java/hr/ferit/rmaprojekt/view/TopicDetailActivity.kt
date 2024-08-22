@@ -6,12 +6,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,6 +46,7 @@ fun TopicDetailScreen(
     val topicsWithFlashcards = topicViewModel.topicsWithFlashcards.collectAsState().value
     val topicWithFlashcards = (topicsWithFlashcards as Result.Success).data.find { it.topic.id == topicId }
     var showDialog by remember { mutableStateOf(false) }
+    var showEnrollmentDialog by remember { mutableStateOf(false) }
 
     if (topicWithFlashcards != null) {
         Scaffold(
@@ -70,6 +74,7 @@ fun TopicDetailScreen(
                         .fillMaxWidth(),
                     style = MaterialTheme.typography.headlineSmall
                 )
+                if(userViewModel.currentUserId == topicWithFlashcards.topic.creatorId){
                 Button(
                     onClick = {
                         topicViewModel.topicWithFlashcards = topicWithFlashcards
@@ -90,6 +95,23 @@ fun TopicDetailScreen(
                 }
                 Button(
                     onClick = {
+                        showEnrollmentDialog = true
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp, start = 16.dp, end = 16.dp)
+                ) {
+                    Text(
+                        "Add a viewer",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+                Button(
+                    onClick = {
                         showDialog = true
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -104,6 +126,7 @@ fun TopicDetailScreen(
                         "Delete",
                         style = MaterialTheme.typography.bodyLarge
                     )
+                }
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Button(
@@ -148,6 +171,57 @@ fun TopicDetailScreen(
                     dismissButton = {
                         Button(
                             onClick = { showDialog = false },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+
+                            )
+                        ){
+                            Text("No")
+                        }
+                    }
+                )
+            }
+            if (showEnrollmentDialog) {
+                var userIdentifier by remember { mutableStateOf("") }
+                var isIdValid by remember { mutableStateOf(true) }
+
+                AlertDialog(
+                    onDismissRequest = { showEnrollmentDialog = false },
+                    title = { Text("Add a new viewer") },
+                    text = {
+                        OutlinedTextField(
+                            value = userIdentifier,
+                            onValueChange = {
+                                userIdentifier = it
+                                isIdValid = true
+                            },
+                            placeholder = {Text(text = "User ID")},
+                            shape = RoundedCornerShape(15.dp),
+                            modifier = modifier
+                                .padding(bottom = 14.dp)
+                                .widthIn(max = 280.dp),
+                            singleLine = true,
+                            isError = !isIdValid,
+                            supportingText = {if (!isIdValid) Text(text = "ID is invalid")}
+                        )
+                           },
+                    confirmButton = {
+                        Button(onClick = {
+                            topicViewModel.addEnrollment(topicId, userIdentifier)
+                            showEnrollmentDialog = false
+                        },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        ) {
+                            Text("Yes")
+                        }
+                    },
+                    dismissButton = {
+                        Button(
+                            onClick = { showEnrollmentDialog = false },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer
