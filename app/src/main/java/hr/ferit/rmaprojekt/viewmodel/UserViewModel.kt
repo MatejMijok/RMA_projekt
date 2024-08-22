@@ -27,6 +27,10 @@ class UserViewModel(private val repository: UserRepository): ViewModel() {
         }
     }
 
+    fun getUserId() : String {
+        return repository.getUserId()
+    }
+
     fun clearUserData(){
         viewModelScope.launch {
             _userData.value = null
@@ -46,6 +50,18 @@ class UserViewModel(private val repository: UserRepository): ViewModel() {
     suspend fun loginUser(email: String, password: String){
         viewModelScope.launch {
             _loginStatus.value = repository.loginUser(email, password)
+        }
+    }
+
+    fun changePassword(newPassword: String, currentPassword: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit){
+        viewModelScope.launch {
+            repository.changePassword(newPassword, currentPassword, onSuccess, onFailure)
+        }
+    }
+
+    fun saveUserData(firstName: String, lastName: String, email: String, currentPassword: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit){
+        viewModelScope.launch {
+            repository.saveUserData(firstName, lastName, email, currentPassword, onSuccess, onFailure)
         }
     }
 }

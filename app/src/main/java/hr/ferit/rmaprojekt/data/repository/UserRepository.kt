@@ -1,6 +1,7 @@
 package hr.ferit.rmaprojekt.data.repository
 
 import android.util.Log
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.firestore.FirebaseFirestore
@@ -47,6 +48,77 @@ class UserRepository {
                 RegistrationResult.Failure(e)
             }
         }
+    }
+
+    suspend fun changePassword(newPassword: String, currentPassword: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit){
+        auth.currentUser?.reload()?.await()
+        val currentUser = auth.currentUser
+
+        val credential = EmailAuthProvider.getCredential(currentUser?.email ?: "", currentPassword)
+
+        currentUser?.reauthenticate(credential)?.addOnCompleteListener { task ->
+            if (task.isSuccessful){
+                currentUser.updatePassword(newPassword).addOnCompleteListener { updateTask ->
+                    if(updateTask.isSuccessful){
+                        onSuccess()
+                    }else{
+                        val exception = updateTask.exception ?: Exception("Password change failed")
+                        onFailure(exception)
+                    }
+                }
+            }else{
+                val exception = task.exception ?: Exception("Password change failed")
+                onFailure(exception)
+            }
+        }
+    }
+
+    suspend fun saveUserData(firstName: String, lastName: String, email: String, currentPassword: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit){
+        auth.currentUser?.reload()?.await()
+        val currentUser = auth.currentUser
+        val credential = EmailAuthProvider.getCredential(currentUser?.email ?: "", currentPassword)
+        currentUser?.reauthenticate(credential)?.addOnCompleteListener { task ->
+            if(task.isSuccessful){
+                currentUser.verifyBeforeUpdateEmail(email).addOnCompleteListener { updateTask ->
+                    if (updateTask.isSuccessful){
+                        updateUserData(firstName, lastName, email, onSuccess, onFailure)
+                    }else{
+                        val exception = updateTask.exception ?: Exception("Email verification failed")
+                        onFailure(exception)
+                    }
+                }
+            }else {
+                val exception = task.exception ?: Exception("Saving failed")
+                onFailure(exception)
+            }
+        }
+
+    }
+
+    fun updateUserData(firstName: String, lastName: String, email: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit){
+        auth.currentUser?.reload()
+        val currentUser = auth.currentUser
+
+        val userDocument = firestore.collection("users").document(currentUser?.uid!!)
+
+        userDocument.update(mapOf(
+            "firstName" to firstName,
+            "lastName" to lastName,
+            "email" to email
+        ))
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener{ exception ->
+                onFailure(exception)
+            }
+    }
+
+    fun getUserId() : String{
+        auth.currentUser?.reload()
+        val currentUser = auth.currentUser
+        Log.d("UserRepository", "User ID: ${currentUser?.uid}")
+        return currentUser?.uid ?: ""
     }
 
     sealed class RegistrationResult{
