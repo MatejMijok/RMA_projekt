@@ -122,24 +122,25 @@ fun ProfileScreen(navController: NavHostController, modifier: Modifier = Modifie
             Button(
                 enabled = email.isNotEmpty() && isEmailValid,
                 modifier = modifier.width(192.dp)
-                    .height(48.dp),
+                    .height(48.dp)
+                    .padding(bottom = 10.dp),
                 onClick = {
                         showUpdateDialog = true
                 }
             ) {
                 Text(text = "Save")
             }
-            Spacer(modifier = modifier.padding(bottom = 10.dp))
             Button(
                 modifier = modifier.width(192.dp)
-                    .height(48.dp),
+                    .height(48.dp)
+                    .padding(bottom = 10.dp),
                 onClick = {
                     showPasswordDialog = true
                 }
             ) {
                 Text(text = "Change password")
             }
-            Spacer(modifier = modifier.weight(1f).padding(bottom = 8.dp))
+            Spacer(modifier = modifier.weight(1f))
             Button(
                 modifier = modifier.width(192.dp)
                     .height(48.dp)
