@@ -93,6 +93,7 @@ fun AddNewTopic(navController: NavHostController, modifier: Modifier = Modifier,
                 onValueChange = {
                     topicName = it
                     topicError = "Topic cannot be empty"
+                    isTopicValid = it.text.isNotEmpty()
                 },
                 placeholder = {Text(text = "Topic name")},
                 shape = RoundedCornerShape(15.dp),
@@ -108,6 +109,7 @@ fun AddNewTopic(navController: NavHostController, modifier: Modifier = Modifier,
                 onValueChange = {
                     topicDescription = it
                     descriptionError = "Description cannot be empty"
+                    isDescriptionValid = it.text.isNotEmpty()
                 },
                 placeholder = {Text(text = "Description")},
                 shape = RoundedCornerShape(15.dp),
@@ -174,12 +176,14 @@ fun AddNewTopic(navController: NavHostController, modifier: Modifier = Modifier,
                     val immutableFlashcards = flashcards.toList()
                     if (topic != null){
                         topicViewModel.topicWithFlashcards = null
-                        val updatedTopic = topic.copy(Topic(name = topicName.text, description = topicDescription.text, id = topic.topic.id, creatorId = topic.topic.creatorId))
+                        val updatedTopic = topic.copy(topic = Topic(name = topicName.text, description = topicDescription.text, id = topic.topic.id, creatorId = topic.topic.creatorId))
                         topicViewModel.updateTopicWithFlashcards(updatedTopic.topic, immutableFlashcards)
                     }else{
                         val newTopic = Topic(name = topicName.text, description = topicDescription.text)
                         topicViewModel.saveTopicWithFlashcards(newTopic, immutableFlashcards)
                     }
+
+                    topicViewModel.clearTopics()
 
                     navController.navigate("home"){
                         popUpTo(0) { inclusive = true }
@@ -241,6 +245,7 @@ fun FlashcardInput(
             onValueChange = {
                 question = it
                 questionError = "Question cannot be empty"
+                isQuestionValid = it.text.isNotEmpty()
                 onFlashcardChange(flashcard.copy(question = it.text))
             },
             placeholder = { Text(text = "Question") },
@@ -257,6 +262,7 @@ fun FlashcardInput(
             onValueChange = {
                 answer = it
                 answerError = "Answer cannot be empty"
+                isAnswerValid = it.text.isNotEmpty()
                 onFlashcardChange(flashcard.copy(answer = it.text))
             },
             placeholder = { Text(text = "Answer") },

@@ -181,7 +181,7 @@ fun AppNavigation(
                     targetOffsetX = { fullWidth -> -fullWidth },
                     animationSpec = tween(durationMillis = 300)
                 )
-            }) { FlashcardsScreen(navController, Modifier, topicViewModel, topicId = it.arguments?.getString("topicId")!!) }
+            }) { FlashcardsScreen(Modifier, topicViewModel, topicId = it.arguments?.getString("topicId")!!) }
         composable(
             "profile",
             enterTransition = {

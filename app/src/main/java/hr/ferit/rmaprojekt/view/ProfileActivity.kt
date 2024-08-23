@@ -66,7 +66,7 @@ fun ProfileScreen(navController: NavHostController, modifier: Modifier = Modifie
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = { ProfileTopBar(navController, userViewModel, topicViewModel) },
-        bottomBar = { BottomNavBar(navController = navController, userViewModel = userViewModel, topicViewModel = topicViewModel) }
+        bottomBar = { BottomNavBar(navController = navController) }
     ) { innerPadding ->
         Column(
             modifier = modifier

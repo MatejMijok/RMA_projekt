@@ -38,7 +38,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.firebase.auth.FirebaseAuth
 import hr.ferit.rmaprojekt.data.model.Topic
-import hr.ferit.rmaprojekt.data.model.User
 import hr.ferit.rmaprojekt.viewmodel.TopicViewModel
 import hr.ferit.rmaprojekt.viewmodel.UserViewModel
 import hr.ferit.rmaprojekt.data.repository.Result
@@ -55,20 +54,17 @@ class HomeActivity : ComponentActivity() {
             if (auth.currentUser != null){
                 userViewModel.getUserData()
                 topicViewModel.getTopics()
-            }else{
-                userViewModel.clearUserData()
-                topicViewModel.clearTopics()
             }
         }
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onResume() {
+        super.onResume()
         FirebaseAuth.getInstance().addAuthStateListener(authStateListener)
     }
 
-    override fun onStop() {
-        super.onStop()
+    override fun onPause() {
+        super.onPause()
         FirebaseAuth.getInstance().removeAuthStateListener(authStateListener)
     }
 }
@@ -88,8 +84,8 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier, 
 
     Scaffold (
         modifier = modifier.fillMaxSize(),
-        topBar = { HomeTopBar(navController, userViewModel, topicViewmodel) },
-        bottomBar = { BottomNavBar(navController = navController, userViewModel = userViewModel, topicViewModel = topicViewmodel) },
+        topBar = { HomeTopBar() },
+        bottomBar = { BottomNavBar(navController = navController) },
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 topicViewmodel.topicWithFlashcards = null
@@ -126,7 +122,7 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier, 
                 }
                 is Result.Success -> {
                     val topics = (topicsWithFlashcards as Result.Success).data.map { it.topic }
-                    HomeContent(userData = userData, modifier = Modifier.padding(innerPadding), topics = topics, navController)
+                    HomeContent(modifier = Modifier.padding(innerPadding), topics = topics, navController)
                 }
                 is Result.Failure -> {
                     Text(text = "Failed to load topics", modifier = Modifier.padding(innerPadding))
@@ -137,7 +133,7 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier, 
 }
 
 @Composable
-fun HomeContent(userData: User?, modifier: Modifier = Modifier, topics: List<Topic>, navController: NavHostController) {
+fun HomeContent(modifier: Modifier = Modifier, topics: List<Topic>, navController: NavHostController) {
     Column(
         modifier = modifier
             .padding(start = 8.dp, end = 8.dp)
@@ -152,14 +148,14 @@ fun HomeContent(userData: User?, modifier: Modifier = Modifier, topics: List<Top
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeTopBar(navController: NavHostController, userViewModel: UserViewModel, topicViewModel: TopicViewModel) {
+fun HomeTopBar() {
     CenterAlignedTopAppBar(
         title = { Text(text = "Home", style = MaterialTheme.typography.headlineLarge) },
     )
 }
 
 @Composable
-fun BottomNavBar(navController: NavHostController, modifier: Modifier = Modifier, userViewModel: UserViewModel, topicViewModel: TopicViewModel){
+fun BottomNavBar(navController: NavHostController){
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
 

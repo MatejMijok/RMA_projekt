@@ -65,7 +65,6 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
     var isPasswordValid by remember { mutableStateOf(true) }
     var isRepeatPasswordValid by remember { mutableStateOf(true) }
 
-    var hasErrors by remember { mutableStateOf(false) }
 
     Column (
         modifier = Modifier
@@ -180,7 +179,6 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
         Button(
             onClick = {
                 focusManager.clearFocus()
-                if(!hasErrors){
                     val user = User(
                         firstName = firstName.text,
                         lastName = lastName.text,
@@ -189,9 +187,8 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
                     userViewModel.viewModelScope.launch{
                         userViewModel.registerUser(user, password.text)
                     }
-                }
             },
-            enabled = email.text.isNotEmpty() && password.text.isNotEmpty() && repeatPassword.text.isNotEmpty() && password.text == repeatPassword.text && !hasErrors,
+            enabled = email.text.isNotEmpty() && password.text.isNotEmpty() && repeatPassword.text.isNotEmpty() && password.text == repeatPassword.text,
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF4B5C92),
                 contentColor = Color(0xFFDDE1F9)

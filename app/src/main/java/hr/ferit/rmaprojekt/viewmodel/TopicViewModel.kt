@@ -33,7 +33,7 @@ class TopicViewModel (private val repository: TopicRepository): ViewModel() {
 
     fun clearTopics(){
         viewModelScope.launch {
-            _topicsWithFlashcards.value = Result.Loading
+            _topicsWithFlashcards.value = Result.Success(emptyList())
         }
     }
 

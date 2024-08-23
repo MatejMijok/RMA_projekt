@@ -155,6 +155,7 @@ fun TopicDetailScreen(
                     confirmButton = {
                         Button(onClick = {
                             topicViewModel.deleteTopic(topicWithFlashcards.topic.id)
+                            topicViewModel.clearTopics()
                             showDialog = false
                             navController.navigate("home") {
                                 popUpTo(0) { inclusive = true }
@@ -212,8 +213,8 @@ fun TopicDetailScreen(
                             showEnrollmentDialog = false
                         },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.errorContainer,
-                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         ) {
                             Text("Yes")
