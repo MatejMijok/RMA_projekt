@@ -77,6 +77,7 @@ fun ProfileScreen(navController: NavHostController, modifier: Modifier = Modifie
         ) {
             if(userViewModel.isAnonymous){
                 Text(text = "Anonymous user", style = MaterialTheme.typography.headlineSmall, modifier = modifier.padding(8.dp))
+                Text(text = "Your data will lost if you reinstall without registering", style = MaterialTheme.typography.bodyMedium, modifier = modifier.padding(8.dp))
                 Text(text = "You can register by clicking the button below", style = MaterialTheme.typography.bodySmall, modifier = modifier.padding(8.dp))
                 Button(
                     modifier = modifier
