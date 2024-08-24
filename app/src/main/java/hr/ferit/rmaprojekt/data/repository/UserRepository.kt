@@ -30,17 +30,30 @@ class UserRepository {
         return null
     }
 
-    suspend fun registerUser(user: User, password: String): RegistrationResult {
+    suspend fun registerUser(user: User, password: String, isAnonymous: Boolean): RegistrationResult {
         return try {
             withContext(Dispatchers.IO) {
-                val authResult = auth.createUserWithEmailAndPassword(user.email, password).await()
-                auth.currentUser?.reload()?.await()
-                val userId = authResult.user?.uid
-                if (userId != null) {
-                    firestore.collection("users").document(userId).set(user).await()
+                if (isAnonymous && auth.currentUser != null){
+                    val credential = EmailAuthProvider.getCredential(user.email, password)
+                    auth.currentUser?.linkWithCredential(credential)?.await()
+
+                    val userId = auth.currentUser?.uid
+
+                    firestore.collection("users").document(userId!!).set(user).await()
+
+                }else{
+                    val authResult = auth.createUserWithEmailAndPassword(user.email, password).await()
+                    auth.currentUser?.reload()?.await()
+                    val userId = authResult.user?.uid
+                    if (userId != null) {
+                        firestore.collection("users").document(userId).set(user).await()
+                    }else{
+                        throw Exception("User ID is null")
+                    }
+                }
+
                 }
                 RegistrationResult.Success
-            }
         } catch (e: Exception) {
             if (e is FirebaseAuthException && e.errorCode == "ERROR_EMAIL_ALREADY_IN_USE"){
                 RegistrationResult.EmailInUse
@@ -92,7 +105,6 @@ class UserRepository {
                 onFailure(exception)
             }
         }
-
     }
 
     fun updateUserData(firstName: String, lastName: String, email: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit){
@@ -135,6 +147,16 @@ class UserRepository {
         }catch(e: Exception){
             LoginResult.Failure(e)
         }
+    }
+
+    suspend fun continueWithoutRegistering(onSuccess: () -> Unit, onFailure: (Exception) -> Unit){
+        try{
+            auth.signInAnonymously().await()
+            onSuccess()
+        }catch (e: Exception){
+            onFailure(Exception("Failed to continue without registering", e))
+        }
+
     }
 
     sealed class LoginResult{

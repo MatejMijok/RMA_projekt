@@ -213,7 +213,6 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
             when(registrationStatus){
                 is UserRepository.RegistrationResult.Success -> {
                     userViewModel.getUserData()
-
                     navController.navigate("home") {
                         popUpTo("welcome") { inclusive = true }
                     }
@@ -226,5 +225,5 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
                 is UserRepository.RegistrationResult.Failure -> {}
             }
         }
-        }
+    }
 }

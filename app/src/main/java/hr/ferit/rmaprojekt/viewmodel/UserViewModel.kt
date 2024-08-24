@@ -2,6 +2,7 @@ package hr.ferit.rmaprojekt.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import hr.ferit.rmaprojekt.data.model.User
 import hr.ferit.rmaprojekt.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +18,7 @@ class UserViewModel(private val repository: UserRepository): ViewModel() {
     private val _loginStatus = MutableStateFlow<UserRepository.LoginResult?>(null)
     val loginStatus: StateFlow<UserRepository.LoginResult?> = _loginStatus.asStateFlow()
     var currentUserId: String? = null
+    var isAnonymous = FirebaseAuth.getInstance().currentUser?.providerData?.any { it.providerId == "firebase" } ?: false
 
     init {
         getUserData()
@@ -43,15 +45,21 @@ class UserViewModel(private val repository: UserRepository): ViewModel() {
         _loginStatus.value = null
     }
 
+    fun resetRegisterStatus(){
+        _registrationStatus.value = null
+    }
+
     suspend fun registerUser(user: User, password: String){
         viewModelScope.launch {
-            _registrationStatus.value = repository.registerUser(user, password)
+            _registrationStatus.value = repository.registerUser(user, password, isAnonymous)
+            isAnonymous = false
         }
     }
 
     suspend fun loginUser(email: String, password: String){
         viewModelScope.launch {
             _loginStatus.value = repository.loginUser(email, password)
+            isAnonymous = false
         }
     }
 
@@ -64,6 +72,13 @@ class UserViewModel(private val repository: UserRepository): ViewModel() {
     fun saveUserData(firstName: String, lastName: String, email: String, currentPassword: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit){
         viewModelScope.launch {
             repository.saveUserData(firstName, lastName, email, currentPassword, onSuccess, onFailure)
+        }
+    }
+
+    fun continueWithoutRegistering(onSuccess: () -> Unit, onFailure: (Exception) -> Unit){
+        viewModelScope.launch {
+            repository.continueWithoutRegistering(onSuccess, onFailure)
+            isAnonymous = true
         }
     }
 }

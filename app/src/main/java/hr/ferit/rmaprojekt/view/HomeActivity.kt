@@ -95,7 +95,7 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier, 
             }
         }
     ) { innerPadding ->
-        if (userData == null){
+        if (userData == null && !userViewModel.isAnonymous){
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.fillMaxSize()

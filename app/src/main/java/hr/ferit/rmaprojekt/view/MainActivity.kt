@@ -2,12 +2,14 @@ package hr.ferit.rmaprojekt.view
 
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -87,7 +89,7 @@ fun AppNavigation(
                         animationSpec = tween(durationMillis = 300)
                     )
                 }
-                ) { WelcomeScreen(navController) }
+                ) { WelcomeScreen(navController, modifier = Modifier, userViewModel) }
             composable(
                 "home",
                 enterTransition = {
@@ -209,7 +211,7 @@ fun AppNavigation(
 }
 
 @Composable
-fun WelcomeScreen(navController: NavHostController, modifier: Modifier = Modifier) {
+fun WelcomeScreen(navController: NavHostController, modifier: Modifier = Modifier, userViewModel: UserViewModel) {
     Column (
         modifier = Modifier
             .fillMaxSize(),
@@ -252,5 +254,23 @@ fun WelcomeScreen(navController: NavHostController, modifier: Modifier = Modifie
                 fontSize = 18.sp,
                 )
         }
+        Spacer(modifier = Modifier.padding(4.dp))
+        Text(
+            text = "Continue without registering",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            modifier = modifier.clickable {
+                userViewModel.continueWithoutRegistering(
+                    onSuccess = {
+                        navController.navigate("home") {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
+                    onFailure = {
+                        Toast.makeText(navController.context, "Failed to continue without registering", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            }
+        )
     }
 }
