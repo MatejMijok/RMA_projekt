@@ -231,19 +231,19 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
                 is UserRepository.RegistrationResult.Failure -> {}
             }
         }
+    }
 
-        if(isLoading){
-            Box(
-                modifier = modifier.fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)),
-                contentAlignment = Alignment.Center
-            ){
-                CircularProgressIndicator(
-                    modifier = Modifier.size(96.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            }
+    if(isLoading){
+        Box(
+            modifier = modifier.fillMaxSize()
+                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)),
+            contentAlignment = Alignment.Center
+        ){
+            CircularProgressIndicator(
+                modifier = Modifier.size(96.dp),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
         }
     }
 }

@@ -139,8 +139,12 @@ fun HomeContent(modifier: Modifier = Modifier, topics: List<Topic>, navControlle
             .padding(start = 8.dp, end = 8.dp)
             .fillMaxWidth()
     ){
-        TopicList(topics = topics){ topic ->
-            navController.navigate("topicDetails/${topic.id}")
+        if(topics.isNotEmpty()){
+            TopicList(topics = topics){ topic ->
+                navController.navigate("topicDetails/${topic.id}")
+            }
+        }else{
+            Text(text = "No topics found", modifier = Modifier.padding(16.dp).align(Alignment.CenterHorizontally), style = MaterialTheme.typography.headlineMedium)
         }
     }
 }
