@@ -18,7 +18,7 @@ class UserViewModel(private val repository: UserRepository): ViewModel() {
     private val _loginStatus = MutableStateFlow<UserRepository.LoginResult?>(null)
     val loginStatus: StateFlow<UserRepository.LoginResult?> = _loginStatus.asStateFlow()
     var currentUserId: String? = null
-    var isAnonymous = FirebaseAuth.getInstance().currentUser?.providerData?.any { it.providerId == "firebase" } ?: false
+    var isAnonymous = FirebaseAuth.getInstance().currentUser?.isAnonymous ?: false
 
     init {
         getUserData()

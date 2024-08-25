@@ -72,15 +72,13 @@ class HomeActivity : ComponentActivity() {
 @Composable
 fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier, userViewModel: UserViewModel, topicViewmodel: TopicViewModel) {
     val topicsWithFlashcards by topicViewmodel.topicsWithFlashcards.collectAsState()
-    val userData = userViewModel.userData.collectAsState().value
+    val userData by userViewModel.userData.collectAsState()
 
-    LaunchedEffect(key1 = userData) {
+    LaunchedEffect(key1 = Unit) {
         userViewModel.getUserData()
-    }
-
-    LaunchedEffect(key1 = topicsWithFlashcards) {
         topicViewmodel.getTopics()
     }
+
 
     Scaffold (
         modifier = modifier.fillMaxSize(),

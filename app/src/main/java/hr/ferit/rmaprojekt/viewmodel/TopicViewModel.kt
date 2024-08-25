@@ -27,6 +27,7 @@ class TopicViewModel (private val repository: TopicRepository): ViewModel() {
 
     fun getTopics(){
         viewModelScope.launch {
+            _topicsWithFlashcards.value = Result.Loading
             _topicsWithFlashcards.value = repository.getTopicsWithFlashcards()
         }
     }
@@ -43,6 +44,7 @@ class TopicViewModel (private val repository: TopicRepository): ViewModel() {
 
         viewModelScope.launch {
             repository.saveTopicWithFlashcards(topic, flashcards, userId!!)
+            getTopics()
         }
     }
 
@@ -51,6 +53,7 @@ class TopicViewModel (private val repository: TopicRepository): ViewModel() {
 
         viewModelScope.launch{
             repository.updateTopicWithFlashcards(topic, flashcards)
+            getTopics()
         }
     }
 
