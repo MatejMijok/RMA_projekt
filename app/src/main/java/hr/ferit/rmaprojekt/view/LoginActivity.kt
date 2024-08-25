@@ -1,12 +1,15 @@
 package hr.ferit.rmaprojekt.view
 
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -14,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,6 +52,7 @@ fun LoginScreen(navController: NavHostController, modifier: Modifier = Modifier,
     var isLoginValid by remember { mutableStateOf(true) }
     var isEmailValid by remember { mutableStateOf(true) }
     var emailError by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
     Column (
         modifier = Modifier
@@ -96,6 +102,7 @@ fun LoginScreen(navController: NavHostController, modifier: Modifier = Modifier,
         )
         Button(
             onClick = {
+                isLoading = true
                 userViewModel.viewModelScope.launch {
                     userViewModel.loginUser(email.text, password.text)
                 }
@@ -117,6 +124,7 @@ fun LoginScreen(navController: NavHostController, modifier: Modifier = Modifier,
         val loginStatus by userViewModel.loginStatus.collectAsState()
 
         LaunchedEffect(key1 = loginStatus) {
+            isLoading = false
             when(loginStatus){
                 is UserRepository.LoginResult.Success -> {
                     navController.navigate("home"){
@@ -129,6 +137,19 @@ fun LoginScreen(navController: NavHostController, modifier: Modifier = Modifier,
 
                 null -> {}
             }
+        }
+    }
+    if(isLoading){
+        Box(
+            modifier = modifier.fillMaxSize()
+                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)),
+            contentAlignment = Alignment.Center
+        ){
+            CircularProgressIndicator(
+                modifier = Modifier.size(96.dp),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
         }
     }
 }

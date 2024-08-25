@@ -2,6 +2,7 @@ package hr.ferit.rmaprojekt.view
 
 import android.annotation.SuppressLint
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -20,6 +22,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -65,7 +69,7 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
     var isPasswordValid by remember { mutableStateOf(true) }
     var isRepeatPasswordValid by remember { mutableStateOf(true) }
 
-
+    var isLoading by remember { mutableStateOf(false) }
     Column (
         modifier = Modifier
             .fillMaxSize()
@@ -179,6 +183,7 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
         Button(
             onClick = {
                 focusManager.clearFocus()
+                isLoading = true
                     val user = User(
                         firstName = firstName.text,
                         lastName = lastName.text,
@@ -210,6 +215,7 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
         )
         val registrationStatus by userViewModel.registrationStatus.collectAsState()
         LaunchedEffect(key1 = registrationStatus) {
+            isLoading = false
             when(registrationStatus){
                 is UserRepository.RegistrationResult.Success -> {
                     userViewModel.getUserData()
@@ -223,6 +229,20 @@ fun RegisterScreen(navController: NavHostController, modifier: Modifier = Modifi
                 }
                 null -> {}
                 is UserRepository.RegistrationResult.Failure -> {}
+            }
+        }
+
+        if(isLoading){
+            Box(
+                modifier = modifier.fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ){
+                CircularProgressIndicator(
+                    modifier = Modifier.size(96.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
             }
         }
     }

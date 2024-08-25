@@ -3,6 +3,7 @@ package hr.ferit.rmaprojekt.view
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -96,6 +97,7 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier, 
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)),
             ){
                 CircularProgressIndicator(
                     modifier = Modifier.size(96.dp),
@@ -109,7 +111,8 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier, 
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.fillMaxSize()
-                    ){
+                            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)),
+                        ){
                         CircularProgressIndicator(
                             modifier = Modifier.size(96.dp),
                             color = MaterialTheme.colorScheme.primary,
