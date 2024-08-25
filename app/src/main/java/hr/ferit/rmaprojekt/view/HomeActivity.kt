@@ -79,7 +79,6 @@ fun HomeScreen(navController: NavHostController, modifier: Modifier = Modifier, 
         topicViewmodel.getTopics()
     }
 
-
     Scaffold (
         modifier = modifier.fillMaxSize(),
         topBar = { HomeTopBar() },
@@ -163,10 +162,8 @@ fun BottomNavBar(navController: NavHostController){
             onClick = {
                 navController.navigate("home"){
                     popUpTo(navController.graph.findStartDestination().id){
-                        saveState = true
+                        saveState = false
                     }
-                    launchSingleTop = true
-                    restoreState = true
                 }
                       },
             icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
@@ -176,10 +173,8 @@ fun BottomNavBar(navController: NavHostController){
             onClick = {
                 navController.navigate("profile"){
                     popUpTo(navController.graph.findStartDestination().id){
-                        saveState = true
+                        saveState = false
                     }
-                    launchSingleTop = true
-                    restoreState = true
                 }
             },
             icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },

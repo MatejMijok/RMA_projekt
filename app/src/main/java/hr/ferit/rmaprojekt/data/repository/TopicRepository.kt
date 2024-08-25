@@ -1,18 +1,22 @@
 package hr.ferit.rmaprojekt.data.repository
 
+import android.net.Uri
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.storage.FirebaseStorage
 import hr.ferit.rmaprojekt.data.model.Enrollment
 import hr.ferit.rmaprojekt.data.model.Flashcard
 import hr.ferit.rmaprojekt.data.model.Topic
 import hr.ferit.rmaprojekt.data.model.TopicWithFlashcards
 import kotlinx.coroutines.tasks.await
+import java.io.InputStream
 
 class TopicRepository {
     private val db = FirebaseFirestore.getInstance()
     private val firebaseAuth = FirebaseAuth.getInstance()
+    private val storage = FirebaseStorage.getInstance()
 
     suspend fun getTopicsWithFlashcards(): Result<List<TopicWithFlashcards>>{
         return try {
@@ -98,6 +102,26 @@ class TopicRepository {
             val enrollmentCollection = db.collection("enrollments")
             val enrollment = Enrollment(userId = userId, topicId = topicId)
             enrollmentCollection.add(enrollment).await()
+        }catch (e: Exception){
+            //
+        }
+    }
+
+    suspend fun uploadImage(imageStream: InputStream): String?{
+        return try{
+            val storageRef = storage.reference
+            val imageRef = storageRef.child("flashcard_images/${System.currentTimeMillis()}.jpg")
+            imageRef.putStream(imageStream).await()
+            imageRef.downloadUrl.await().toString()
+        }catch (e: Exception){
+            null
+        }
+    }
+
+    fun deleteImage(imageUrl: String){
+        try{
+            val storageRef = storage.getReferenceFromUrl(imageUrl)
+            storageRef.delete()
         }catch (e: Exception){
             //
         }

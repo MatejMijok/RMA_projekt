@@ -1,5 +1,6 @@
 package hr.ferit.rmaprojekt.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import hr.ferit.rmaprojekt.data.repository.Result
+import java.io.InputStream
 
 class TopicViewModel (private val repository: TopicRepository): ViewModel() {
     private val firebaseAuth = FirebaseAuth.getInstance()
@@ -67,5 +69,13 @@ class TopicViewModel (private val repository: TopicRepository): ViewModel() {
         viewModelScope.launch {
             repository.addEnrollment(topicId, userId)
         }
+    }
+
+    suspend fun uploadImage(imageStream: InputStream): String?{
+        return repository.uploadImage(imageStream)
+    }
+
+    fun deleteImage(imageUrl: String){
+        repository.deleteImage(imageUrl)
     }
 }
