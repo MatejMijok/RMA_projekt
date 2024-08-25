@@ -133,6 +133,10 @@ fun LoginScreen(navController: NavHostController, modifier: Modifier = Modifier,
                 }
                 is UserRepository.LoginResult.Failure -> {
                     isLoginValid = false
+                    emailError = "E-mail or password is incorrect"
+                    isEmailValid = false
+                    email = TextFieldValue("")
+                    password = TextFieldValue("")
                 }
 
                 null -> {}
