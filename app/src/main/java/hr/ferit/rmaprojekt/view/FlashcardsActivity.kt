@@ -137,7 +137,7 @@ fun FlashCard(
                             requestBuilderTransform = {
                                 it.override(1000,1000)
                                     .centerCrop()
-                            }
+                            },
                         )
                     }
                 }
@@ -169,3 +169,4 @@ fun FullScreenImage(imageUrl: String?, onClose: () -> Unit){
         )
     }
 }
+

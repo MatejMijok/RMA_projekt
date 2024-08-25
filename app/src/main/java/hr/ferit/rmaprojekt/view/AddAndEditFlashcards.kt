@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -20,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -241,6 +243,7 @@ fun FlashcardInput(
     var imageUrl by remember { mutableStateOf(flashcard.imageUrl) }
 
     var shouldDeleteImage by remember { mutableStateOf(imageUrl.isNotEmpty()) }
+    var loading by remember { mutableStateOf(false) }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -251,13 +254,14 @@ fun FlashcardInput(
 
     LaunchedEffect(selectedImageUri){
         if(selectedImageUri != null){
+            loading = true
             val imageStream = context.contentResolver.openInputStream(selectedImageUri!!)
             imageUrl = topicViewModel.uploadImage(imageStream!!).toString()
+            loading = false
             shouldDeleteImage = true
             onFlashcardChange(flashcard.copy(imageUrl = imageUrl))
         }
     }
-
     Column (
         modifier = Modifier
             .fillMaxSize()
@@ -324,11 +328,20 @@ fun FlashcardInput(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             ),
+            enabled = !loading
         ) {
-            if(!shouldDeleteImage){
-                Text("Add image", fontSize = 18.sp)
-            }else{
-                Text("Delete image", fontSize = 18.sp)
+            if (loading) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text(
+                    text = if (!shouldDeleteImage) "Add image" else "Delete image",
+                    fontSize = 18.sp
+                )
             }
         }
         Spacer(modifier = Modifier.height(14.dp))
