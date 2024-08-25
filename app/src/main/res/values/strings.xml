@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">RMA projekt</string>
+    <string name="app_name">Flashcards for studying</string>
     <string name="title_activity_login">LoginActivity</string>
     <string name="title_activity_register">RegisterActivity</string>
     <string name="title_activity_home">HomeActivity</string>
@@ -7,4 +7,5 @@
     <string name="title_activity_topic_detail">TopicDetailActivity</string>
     <string name="title_activity_flashcards">FlashcardsActivity</string>
     <string name="title_activity_profile">ProfileActivity</string>
+    <string name="title_activity_splash">SplashActivity</string>
 </resources>

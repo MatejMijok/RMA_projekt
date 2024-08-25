@@ -1,6 +1,5 @@
 package hr.ferit.rmaprojekt.viewmodel
 
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
@@ -75,7 +74,7 @@ class TopicViewModel (private val repository: TopicRepository): ViewModel() {
         return repository.uploadImage(imageStream)
     }
 
-    fun deleteImage(imageUrl: String){
+fun deleteImage(imageUrl: String){
         repository.deleteImage(imageUrl)
     }
 }

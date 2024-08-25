@@ -227,8 +227,8 @@ fun FlashcardInput(
     modifier: Modifier = Modifier,
     deleteEnabled: Boolean,
     topicViewModel: TopicViewModel
-){
-    var context = LocalContext.current
+) {
+    val context = LocalContext.current
 
     var question by remember { mutableStateOf(TextFieldValue(flashcard.question)) }
     var answer by remember { mutableStateOf(TextFieldValue(flashcard.answer)) }
@@ -252,8 +252,8 @@ fun FlashcardInput(
         }
     )
 
-    LaunchedEffect(selectedImageUri){
-        if(selectedImageUri != null){
+    LaunchedEffect(selectedImageUri) {
+        if (selectedImageUri != null) {
             loading = true
             val imageStream = context.contentResolver.openInputStream(selectedImageUri!!)
             imageUrl = topicViewModel.uploadImage(imageStream!!).toString()
@@ -262,7 +262,8 @@ fun FlashcardInput(
             onFlashcardChange(flashcard.copy(imageUrl = imageUrl))
         }
     }
-    Column (
+
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .widthIn(max = 400.dp)
@@ -271,7 +272,7 @@ fun FlashcardInput(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "${index+1}. flashcard",
+            text = "${index + 1}. flashcard",
             fontSize = 24.sp,
             modifier = modifier.padding(bottom = 14.dp)
         )
@@ -311,16 +312,15 @@ fun FlashcardInput(
         )
         Button(
             onClick = {
-                if(!shouldDeleteImage){
+                if (!shouldDeleteImage) {
                     galleryLauncher.launch("image/*")
-                    shouldDeleteImage = true
-                }else{
+                } else {
                     topicViewModel.deleteImage(imageUrl)
                     imageUrl = ""
                     onFlashcardChange(flashcard.copy(imageUrl = imageUrl))
                     shouldDeleteImage = false
                 }
-                      },
+            },
             modifier = modifier
                 .width(192.dp)
                 .height(48.dp),
@@ -351,7 +351,7 @@ fun FlashcardInput(
                 imageUrl = ""
                 onFlashcardChange(flashcard.copy(imageUrl = imageUrl))
                 topicViewModel.deleteImage(imageUrl)
-                      },
+            },
             modifier = modifier
                 .width(192.dp)
                 .height(48.dp),
