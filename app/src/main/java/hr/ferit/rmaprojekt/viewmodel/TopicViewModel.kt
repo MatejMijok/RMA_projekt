@@ -74,7 +74,11 @@ class TopicViewModel (private val repository: TopicRepository): ViewModel() {
         return repository.uploadImage(imageStream)
     }
 
-fun deleteImage(imageUrl: String){
+    fun deleteImage(imageUrl: String){
         repository.deleteImage(imageUrl)
+    }
+
+    fun leaveTopic(topicId: String){
+        repository.leaveTopic(topicId)
     }
 }

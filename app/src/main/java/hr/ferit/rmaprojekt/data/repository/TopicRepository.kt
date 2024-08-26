@@ -1,6 +1,5 @@
 package hr.ferit.rmaprojekt.data.repository
 
-import android.net.Uri
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -100,8 +99,12 @@ class TopicRepository {
         firebaseAuth.currentUser?.reload()?.await()
         try{
             val enrollmentCollection = db.collection("enrollments")
-            val enrollment = Enrollment(userId = userId, topicId = topicId)
-            enrollmentCollection.add(enrollment).await()
+            val existingEnrollmentQuery = enrollmentCollection.whereEqualTo("topicId", topicId).whereEqualTo("userId", userId).get().await()
+
+            if(!existingEnrollmentQuery.isEmpty){
+                val enrollment = Enrollment(userId = userId, topicId = topicId)
+                enrollmentCollection.add(enrollment).await()
+            }
         }catch (e: Exception){
             //
         }
@@ -124,6 +127,23 @@ class TopicRepository {
             storageRef.delete()
         }catch (e: Exception){
             //
+        }
+    }
+
+    fun leaveTopic(topicId: String){
+        firebaseAuth.currentUser?.reload()
+        val userId = firebaseAuth.currentUser?.uid
+
+        val enrollmentCollection = db.collection("enrollments")
+        val query = enrollmentCollection.whereEqualTo("topicId", topicId)
+                                        .whereEqualTo("userId", userId)
+
+        query.get().addOnSuccessListener { snapshot ->
+            if(!snapshot.isEmpty){
+                snapshot.documents.forEach { document ->
+                    document.reference.delete()
+                }
+            }
         }
     }
 }
