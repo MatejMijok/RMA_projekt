@@ -1,6 +1,7 @@
 package hr.ferit.rmaprojekt.view
 
 import android.net.Uri
+import android.os.Environment
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -27,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,6 +45,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import androidx.navigation.NavHostController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -50,6 +54,7 @@ import hr.ferit.rmaprojekt.data.model.Flashcard
 import hr.ferit.rmaprojekt.data.model.Topic
 import hr.ferit.rmaprojekt.viewmodel.TopicViewModel
 import kotlinx.coroutines.launch
+import java.io.File
 
 class AddNewFlashcardsActivity : ComponentActivity() {
 }
@@ -241,14 +246,25 @@ fun FlashcardInput(
 
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var imageUrl by remember { mutableStateOf(flashcard.imageUrl) }
+    val imageUri = remember { mutableStateOf<Uri?>(null) }
 
     var shouldDeleteImage by remember { mutableStateOf(imageUrl.isNotEmpty()) }
     var loading by remember { mutableStateOf(false) }
+    var showImageSourceDialog by remember { mutableStateOf(false) }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
             selectedImageUri = uri
+        }
+    )
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture(),
+        onResult = { success ->
+            if (success) {
+                selectedImageUri = imageUri.value
+            }
         }
     )
 
@@ -263,7 +279,36 @@ fun FlashcardInput(
         }
     }
 
-    Column(
+    if (showImageSourceDialog) {
+        AlertDialog(
+            onDismissRequest = { showImageSourceDialog = false },
+            title = { Text("Select Image Source") },
+            text = { Text("Choose between taking a photo or selecting from gallery.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val tempFile = File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "${System.currentTimeMillis()}.jpg")
+                        imageUri.value = FileProvider.getUriForFile(context, "${context.packageName}.provider", tempFile)
+                        cameraLauncher.launch(imageUri.value!!)
+                        showImageSourceDialog = false
+                    }
+                ) {
+                    Text("Camera", style = MaterialTheme.typography.bodyMedium)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    galleryLauncher.launch("image/*")
+                    showImageSourceDialog = false
+                }) {
+                    Text("Choose from Gallery")
+                }
+            }
+        )
+    }
+
+
+Column(
         modifier = Modifier
             .fillMaxSize()
             .widthIn(max = 400.dp)
@@ -313,7 +358,7 @@ fun FlashcardInput(
         Button(
             onClick = {
                 if (!shouldDeleteImage) {
-                    galleryLauncher.launch("image/*")
+                    showImageSourceDialog = true
                 } else {
                     topicViewModel.deleteImage(imageUrl)
                     imageUrl = ""
