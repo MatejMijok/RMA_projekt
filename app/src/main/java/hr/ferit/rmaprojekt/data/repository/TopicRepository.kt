@@ -99,12 +99,9 @@ class TopicRepository {
         firebaseAuth.currentUser?.reload()?.await()
         try{
             val enrollmentCollection = db.collection("enrollments")
-            val existingEnrollmentQuery = enrollmentCollection.whereEqualTo("topicId", topicId).whereEqualTo("userId", userId).get().await()
 
-            if(!existingEnrollmentQuery.isEmpty){
-                val enrollment = Enrollment(userId = userId, topicId = topicId)
-                enrollmentCollection.add(enrollment).await()
-            }
+            val enrollment = Enrollment(userId = userId, topicId = topicId)
+            enrollmentCollection.add(enrollment).await()
         }catch (e: Exception){
             //
         }
